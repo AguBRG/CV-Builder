@@ -354,8 +354,13 @@ textarea:focus {
   margin-bottom: 14px;
   border-top: 0;
   border-bottom: 1px solid var(--line);
-  padding-top: 0;
-  padding-bottom: 14px;
+  padding-top: 7px;
+  padding-bottom: 7px;
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  background: var(--panel);
+  box-shadow: 0 6px 16px rgba(31, 27, 22, 0.08);
 }
 
 .layout-pick {
