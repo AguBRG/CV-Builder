@@ -89,7 +89,8 @@ function createDefaultEducationOptionalFields() {
     degree: true,
     institution: true,
     start: true,
-    end: true
+    end: true,
+    inProgress: true
   };
 }
 
@@ -264,9 +265,54 @@ function collectRepeatOptionalStates(item, defaults) {
   );
 }
 
+function updateEducationInProgressState(card) {
+  const inProgressCheckbox = card.querySelector('[data-field="inProgress"]');
+  const endInput = card.querySelector('[data-field="end"]');
+
+  if (!inProgressCheckbox || !endInput) {
+    return;
+  }
+
+  if (inProgressCheckbox.checked) {
+    if (endInput.value.trim() && endInput.value.trim().toLowerCase() !== "en curso") {
+      endInput.dataset.previousEndValue = endInput.value;
+    }
+
+    endInput.value = "En curso";
+    endInput.readOnly = true;
+  } else {
+    if (endInput.value.trim().toLowerCase() === "en curso") {
+      endInput.value = endInput.dataset.previousEndValue || "";
+    }
+
+    endInput.readOnly = false;
+    delete endInput.dataset.previousEndValue;
+  }
+}
+
+function bindEducationInProgressToggle(card) {
+  if (!card.classList.contains("education-item")) {
+    return;
+  }
+
+  const inProgressCheckbox = card.querySelector('[data-field="inProgress"]');
+  if (!inProgressCheckbox) {
+    return;
+  }
+
+  inProgressCheckbox.addEventListener("change", () => {
+    updateEducationInProgressState(card);
+    runAtsHint();
+    scheduleAutoSave();
+  });
+
+  updateEducationInProgressState(card);
+}
+
 function createRepeatItem(template, listEl) {
   const clone = template.content.firstElementChild.cloneNode(true);
   enhanceOptionalFields(clone);
+  bindEducationInProgressToggle(clone);
 
   clone.querySelector(".remove-btn").addEventListener("click", () => {
     clone.remove();
@@ -335,6 +381,7 @@ function getFormData() {
       institution: getControlValue(item.querySelector('[data-field="institution"]'), true),
       start: getControlValue(item.querySelector('[data-field="start"]'), true),
       end: getControlValue(item.querySelector('[data-field="end"]'), true),
+      inProgress: item.querySelector('[data-field="inProgress"]')?.checked || false,
       optionalFields: collectRepeatOptionalStates(item, createDefaultEducationOptionalFields())
     })),
     languages: collectRepeats(".language-item", (item) => ({
@@ -415,9 +462,10 @@ function renderEducation(list) {
       degree: getEnabledValue(edu, "degree"),
       institution: getEnabledValue(edu, "institution"),
       start: getEnabledValue(edu, "start"),
-      end: getEnabledValue(edu, "end")
+      end: edu.inProgress ? "En curso" : getEnabledValue(edu, "end"),
+      inProgress: edu.inProgress
     }))
-    .filter((edu) => edu.degree || edu.institution || edu.start || edu.end);
+    .filter((edu) => edu.degree || edu.institution || edu.start || edu.end || edu.inProgress);
 
   if (!visibleItems.length) {
     return "<p class=\"muted\">Agrega tu formación académica.</p>";
@@ -658,7 +706,7 @@ function getAllCvText(data) {
       getEnabledValue(edu, "degree"),
       getEnabledValue(edu, "institution"),
       getEnabledValue(edu, "start"),
-      getEnabledValue(edu, "end")
+      edu.inProgress ? "en curso" : getEnabledValue(edu, "end")
     ])
     .join(" ");
 
@@ -791,6 +839,11 @@ function loadDraft() {
     setRepeatValue(card, "institution", edu.institution);
     setRepeatValue(card, "start", edu.start);
     setRepeatValue(card, "end", edu.end);
+    const inProgressCheckbox = card.querySelector('[data-field="inProgress"]');
+    if (inProgressCheckbox) {
+      inProgressCheckbox.checked = Boolean(edu.inProgress);
+      updateEducationInProgressState(card);
+    }
 
     const optionalFields = { ...createDefaultEducationOptionalFields(), ...(edu.optionalFields || {}) };
     Object.entries(optionalFields).forEach(([field, enabled]) => {
