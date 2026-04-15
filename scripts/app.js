@@ -336,6 +336,15 @@ function createDefaultOptionalFields() {
   };
 }
 
+function createDefaultSectionVisibility() {
+  return {
+    experience: true,
+    education: true,
+    courses: true,
+    languages: true
+  };
+}
+
 function createDefaultExperienceOptionalFields() {
   return {
     role: true,
@@ -654,6 +663,12 @@ function collectRepeats(selector, mapper) {
 }
 
 function getFormData() {
+  const sectionVisibility = createDefaultSectionVisibility();
+  sectionVisibility.experience = !form.elements.noExperience?.checked;
+  sectionVisibility.education = !form.elements.noEducation?.checked;
+  sectionVisibility.courses = !form.elements.noCourses?.checked;
+  sectionVisibility.languages = !form.elements.noLanguages?.checked;
+
   const data = {
     basics: {
       fullName: getRawFieldValue("fullName"),
@@ -671,6 +686,7 @@ function getFormData() {
     layout: form.elements.layout.value,
     fontPreset: getFontPreset(form.elements.fontPreset?.value),
     optionalFields: getNamedFieldOptionalStates(),
+    sectionVisibility,
     experiences: collectRepeats(".experience-item", (item) => ({
       role: getControlValue(item.querySelector('[data-field="role"]'), true),
       company: getControlValue(item.querySelector('[data-field="company"]'), true),
@@ -944,6 +960,35 @@ function renderAtsCv(data) {
     ? `<p class="headline">${escapeHtml(headline)}</p>`
     : "";
 
+  const showExperience = data.sectionVisibility?.experience !== false;
+  const showEducation = data.sectionVisibility?.education !== false;
+  const showCourses = data.sectionVisibility?.courses !== false;
+  const showLanguages = data.sectionVisibility?.languages !== false;
+  const experienceSection = showExperience
+    ? `<section>
+        <h2>Experiencia</h2>
+        ${renderExperience(data.experiences)}
+      </section>`
+    : "";
+  const educationSection = showEducation
+    ? `<section>
+        <h2>Educación</h2>
+        ${renderEducation(data.education)}
+      </section>`
+    : "";
+  const coursesSection = showCourses
+    ? `<section>
+        <h2>Cursos</h2>
+        ${renderCourses(data.courses)}
+      </section>`
+    : "";
+  const languagesSection = showLanguages
+    ? `<section>
+        <h2>Idiomas</h2>
+        <ul>${renderLanguages(data.languages)}</ul>
+      </section>`
+    : "";
+
   return `
     <header class="cv-header">
       <h1>${escapeHtml(fullName)}</h1>
@@ -954,29 +999,17 @@ function renderAtsCv(data) {
     <section class="cv-body">
       ${summarySection}
 
-      <section>
-        <h2>Experiencia</h2>
-        ${renderExperience(data.experiences)}
-      </section>
+      ${experienceSection}
 
-      <section>
-        <h2>Educación</h2>
-        ${renderEducation(data.education)}
-      </section>
+      ${educationSection}
 
-      <section>
-        <h2>Cursos</h2>
-        ${renderCourses(data.courses)}
-      </section>
+      ${coursesSection}
 
       ${skillsSection}
 
       ${notesSection}
 
-      <section>
-        <h2>Idiomas</h2>
-        <ul>${renderLanguages(data.languages)}</ul>
-      </section>
+      ${languagesSection}
     </section>
   `;
 }
@@ -1017,6 +1050,35 @@ function renderPersonalCv(data) {
         </section>`
     : "";
 
+  const showExperience = data.sectionVisibility?.experience !== false;
+  const showEducation = data.sectionVisibility?.education !== false;
+  const showCourses = data.sectionVisibility?.courses !== false;
+  const showLanguages = data.sectionVisibility?.languages !== false;
+  const experienceSection = showExperience
+    ? `<section>
+          <h2>Experiencia</h2>
+          ${renderExperience(data.experiences)}
+        </section>`
+    : "";
+  const educationSection = showEducation
+    ? `<section>
+          <h2>Educación</h2>
+          ${renderEducation(data.education)}
+        </section>`
+    : "";
+  const coursesSection = showCourses
+    ? `<section>
+          <h2>Cursos</h2>
+          ${renderCourses(data.courses)}
+        </section>`
+    : "";
+  const languagesSection = showLanguages
+    ? `<section>
+          <h2>Idiomas</h2>
+          <ul>${renderLanguages(data.languages)}</ul>
+        </section>`
+    : "";
+
   return `
     <header class="cv-header">
       <h1>${escapeHtml(fullName)}</h1>
@@ -1028,29 +1090,17 @@ function renderPersonalCv(data) {
       <aside>
         ${skillsSection}
 
-        <section>
-          <h2>Idiomas</h2>
-          <ul>${renderLanguages(data.languages)}</ul>
-        </section>
+        ${languagesSection}
 
-        <section>
-          <h2>Educación</h2>
-          ${renderEducation(data.education)}
-        </section>
+        ${educationSection}
 
-        <section>
-          <h2>Cursos</h2>
-          ${renderCourses(data.courses)}
-        </section>
+        ${coursesSection}
       </aside>
 
       <section>
         ${summarySection}
 
-        <section>
-          <h2>Experiencia</h2>
-          ${renderExperience(data.experiences)}
-        </section>
+        ${experienceSection}
 
         ${notesSection}
       </section>
@@ -1072,7 +1122,13 @@ function renderCv(data) {
 }
 
 function getAllCvText(data) {
-  const experienceText = data.experiences
+  const showExperience = data.sectionVisibility?.experience !== false;
+  const showEducation = data.sectionVisibility?.education !== false;
+  const showCourses = data.sectionVisibility?.courses !== false;
+  const showLanguages = data.sectionVisibility?.languages !== false;
+
+  const experienceText = showExperience
+    ? data.experiences
     .flatMap((exp) => [
       getEnabledValue(exp, "role"),
       getEnabledValue(exp, "company"),
@@ -1082,29 +1138,36 @@ function getAllCvText(data) {
       getEnabledValue(exp, "referenceContact"),
       ...(isFieldEnabled(exp.optionalFields, "bullets") ? exp.bullets : [])
     ])
-    .join(" ");
+    .join(" ")
+    : "";
 
-  const educationText = data.education
+  const educationText = showEducation
+    ? data.education
     .flatMap((edu) => [
       getEnabledValue(edu, "degree"),
       getEnabledValue(edu, "institution"),
       getEnabledValue(edu, "start"),
       edu.inProgress ? "en curso" : getEnabledValue(edu, "end")
     ])
-    .join(" ");
+    .join(" ")
+    : "";
 
-  const courseText = data.courses
+  const courseText = showCourses
+    ? data.courses
     .flatMap((course) => [
       getEnabledValue(course, "degree"),
       getEnabledValue(course, "institution"),
       getEnabledValue(course, "start"),
       course.inProgress ? "en curso" : getEnabledValue(course, "end")
     ])
-    .join(" ");
+    .join(" ")
+    : "";
 
-  const languageText = data.languages
+  const languageText = showLanguages
+    ? data.languages
     .flatMap((lang) => [getEnabledValue(lang, "name"), getEnabledValue(lang, "level")])
-    .join(" ");
+    .join(" ")
+    : "";
 
   return [
     getOptionalValue(data.optionalFields, "fullName", data.basics.fullName),
@@ -1211,12 +1274,18 @@ function loadDraft() {
     }
   });
 
+  const sectionVisibility = { ...createDefaultSectionVisibility(), ...(data.sectionVisibility || {}) };
+  form.elements.noExperience.checked = !sectionVisibility.experience;
+  form.elements.noEducation.checked = !sectionVisibility.education;
+  form.elements.noCourses.checked = !sectionVisibility.courses;
+  form.elements.noLanguages.checked = !sectionVisibility.languages;
+
   experienceList.innerHTML = "";
   educationList.innerHTML = "";
   courseList.innerHTML = "";
   languageList.innerHTML = "";
 
-  (data.experiences?.length ? data.experiences : [{}]).forEach((exp) => {
+  (sectionVisibility.experience ? (data.experiences?.length ? data.experiences : [{}]) : []).forEach((exp) => {
     const card = createRepeatItem(experienceTemplate, experienceList);
     setRepeatValue(card, "role", exp.role);
     setRepeatValue(card, "company", exp.company);
@@ -1235,7 +1304,7 @@ function loadDraft() {
     });
   });
 
-  (data.education?.length ? data.education : [{}]).forEach((edu) => {
+  (sectionVisibility.education ? (data.education?.length ? data.education : [{}]) : []).forEach((edu) => {
     const card = createRepeatItem(educationTemplate, educationList);
     setRepeatValue(card, "degree", edu.degree);
     setRepeatValue(card, "institution", edu.institution);
@@ -1256,7 +1325,7 @@ function loadDraft() {
     });
   });
 
-  (data.courses?.length ? data.courses : [{}]).forEach((course) => {
+  (sectionVisibility.courses ? (data.courses?.length ? data.courses : [{}]) : []).forEach((course) => {
     const card = createRepeatItem(courseTemplate, courseList);
     setRepeatValue(card, "degree", course.degree);
     setRepeatValue(card, "institution", course.institution);
@@ -1277,7 +1346,7 @@ function loadDraft() {
     });
   });
 
-  (data.languages?.length ? data.languages : [{}]).forEach((lang) => {
+  (sectionVisibility.languages ? (data.languages?.length ? data.languages : [{}]) : []).forEach((lang) => {
     const card = createRepeatItem(languageTemplate, languageList);
     setRepeatValue(card, "name", lang.name);
     setRepeatValue(card, "level", lang.level);
@@ -1291,6 +1360,11 @@ function loadDraft() {
     });
   });
 
+  ["noExperience", "noEducation", "noCourses", "noLanguages"].forEach((name) => {
+    const checkbox = form.elements[name];
+    checkbox?._applyNoSectionState?.(false);
+  });
+
   runAtsHint();
   markSaveStatus("Borrador recuperado. Los cambios se guardan automáticamente.", true);
 }
@@ -1300,6 +1374,41 @@ function addDefaultItems() {
   createRepeatItem(educationTemplate, educationList);
   createRepeatItem(courseTemplate, courseList);
   createRepeatItem(languageTemplate, languageList);
+}
+
+function bindNoSectionToggle({
+  checkboxName,
+  addButtonId,
+  listEl,
+  createItem
+}) {
+  const checkbox = form.elements[checkboxName];
+  const addButton = document.querySelector(addButtonId);
+
+  if (!checkbox || !addButton || !listEl) {
+    return;
+  }
+
+  const applyState = (shouldPersist = true) => {
+    const noSection = checkbox.checked;
+    addButton.disabled = noSection;
+    listEl.style.display = noSection ? "none" : "block";
+
+    if (noSection) {
+      listEl.innerHTML = "";
+    } else if (!listEl.children.length) {
+      createItem();
+    }
+
+    if (shouldPersist) {
+      runAtsHint();
+      scheduleAutoSave();
+    }
+  };
+
+  checkbox.addEventListener("change", () => applyState(true));
+  checkbox._applyNoSectionState = applyState;
+  applyState(false);
 }
 
 function buildStandaloneHtml(data) {
@@ -1362,6 +1471,34 @@ document.querySelector("#addCourse").addEventListener("click", () => {
 document.querySelector("#addLanguage").addEventListener("click", () => {
   createRepeatItem(languageTemplate, languageList);
   scheduleAutoSave();
+});
+
+bindNoSectionToggle({
+  checkboxName: "noExperience",
+  addButtonId: "#addExperience",
+  listEl: experienceList,
+  createItem: () => createRepeatItem(experienceTemplate, experienceList)
+});
+
+bindNoSectionToggle({
+  checkboxName: "noEducation",
+  addButtonId: "#addEducation",
+  listEl: educationList,
+  createItem: () => createRepeatItem(educationTemplate, educationList)
+});
+
+bindNoSectionToggle({
+  checkboxName: "noCourses",
+  addButtonId: "#addCourse",
+  listEl: courseList,
+  createItem: () => createRepeatItem(courseTemplate, courseList)
+});
+
+bindNoSectionToggle({
+  checkboxName: "noLanguages",
+  addButtonId: "#addLanguage",
+  listEl: languageList,
+  createItem: () => createRepeatItem(languageTemplate, languageList)
 });
 
 document.querySelectorAll('[data-action="save-draft"]').forEach((button) => {
