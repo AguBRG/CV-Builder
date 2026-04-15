@@ -65,11 +65,21 @@
 .cv-template .exp-item,
 .cv-template .edu-item {
   margin-bottom: 12px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #efe6d8;
+}
+
+.cv-template .exp-item:last-child,
+.cv-template .edu-item:last-child {
+  margin-bottom: 0;
+  padding-bottom: 0;
+  border-bottom: 0;
 }
 
 .cv-template .title-row {
   display: flex;
   justify-content: space-between;
+  align-items: flex-start;
   gap: 12px;
   flex-wrap: wrap;
   margin-bottom: 4px;
@@ -89,8 +99,19 @@
 }
 
 .cv-template .muted {
+  margin: 0;
   color: #5a5348;
   font-size: 0.9rem;
+}
+
+.cv-template .title-row .muted {
+  white-space: nowrap;
+}
+
+.cv-template .exp-item > .muted,
+.cv-template .edu-item > .muted,
+.cv-template .exp-reference {
+  margin-top: 2px;
 }
 
 .cv-template.cv-ats .cv-body {
