@@ -3,6 +3,7 @@ const preview = document.querySelector("#cvPreview");
 const previewMeta = document.querySelector("#previewMeta");
 const atsHint = document.querySelector("#atsHint");
 const saveStatus = document.querySelector("#saveStatus");
+const themeToggle = document.querySelector("#themeToggle");
 
 const experienceList = document.querySelector("#experienceList");
 const educationList = document.querySelector("#educationList");
@@ -99,7 +100,24 @@ const FONT_PRESETS = {
   }
 };
 const DEFAULT_FONT_PRESET = "manrope";
+const DEFAULT_THEME = "light";
 let autoSaveTimer = null;
+
+function getCurrentTheme() {
+  return document.body.classList.contains("theme-dark") ? "dark" : "light";
+}
+
+function applyTheme(theme) {
+  const resolvedTheme = theme === "dark" ? "dark" : "light";
+  document.body.classList.toggle("theme-dark", resolvedTheme === "dark");
+
+  if (themeToggle) {
+    themeToggle.textContent = resolvedTheme === "dark" ? "☀" : "☾";
+    themeToggle.setAttribute("aria-label", resolvedTheme === "dark" ? "Activar modo claro" : "Activar modo oscuro");
+    themeToggle.setAttribute("title", resolvedTheme === "dark" ? "Modo claro" : "Modo oscuro");
+    themeToggle.setAttribute("aria-pressed", String(resolvedTheme === "dark"));
+  }
+}
 
 function getDateYearBounds() {
   const currentYear = new Date().getFullYear();
@@ -685,6 +703,7 @@ function getFormData() {
     jobKeywords: splitCommaList(getRawFieldValue("jobKeywords")),
     layout: form.elements.layout.value,
     fontPreset: getFontPreset(form.elements.fontPreset?.value),
+    theme: getCurrentTheme(),
     optionalFields: getNamedFieldOptionalStates(),
     sectionVisibility,
     experiences: collectRepeats(".experience-item", (item) => ({
@@ -1229,6 +1248,7 @@ function setRepeatValue(root, field, value) {
 function loadDraft() {
   const raw = localStorage.getItem(STORAGE_KEY);
   if (!raw) {
+    applyTheme(DEFAULT_THEME);
     addDefaultItems();
     runAtsHint();
     markSaveStatus("Sin borrador previo. Los cambios se guardarán automáticamente.");
@@ -1241,11 +1261,14 @@ function loadDraft() {
     data = JSON.parse(raw);
   } catch {
     localStorage.removeItem(STORAGE_KEY);
+    applyTheme(DEFAULT_THEME);
     addDefaultItems();
     runAtsHint();
     markSaveStatus("No se pudo leer el borrador anterior. Se reinició el formulario.");
     return;
   }
+
+  applyTheme(data.theme || DEFAULT_THEME);
 
   [
     "fullName",
@@ -1517,6 +1540,12 @@ document.querySelectorAll('[data-action="print-pdf"]').forEach((button) => {
   button.addEventListener("click", printPdf);
 });
 
+themeToggle?.addEventListener("click", () => {
+  const nextTheme = getCurrentTheme() === "dark" ? "light" : "dark";
+  applyTheme(nextTheme);
+  saveDraft();
+});
+
 form.addEventListener("input", () => {
   runAtsHint();
   scheduleAutoSave();
@@ -1533,5 +1562,6 @@ form.addEventListener("submit", (event) => {
 
 enhanceOptionalFields(form);
 setupDateSelectors(form);
+applyTheme(DEFAULT_THEME);
 loadDraft();
 renderCv(getFormData());

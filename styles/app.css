@@ -29,6 +29,19 @@ body {
   position: relative;
 }
 
+body.theme-dark {
+  --bg: #17130f;
+  --panel: #1f1a15;
+  --ink: #f2e8d8;
+  --muted: #b7a892;
+  --line: #4f4436;
+  --brand: #2f8f6d;
+  --brand-strong: #26755a;
+  --accent: #d5a04a;
+  --shadow: 0 14px 36px rgba(0, 0, 0, 0.32);
+  background: radial-gradient(circle at 12% 10%, #2a241d 0%, #1b1713 45%, #13100d 100%);
+}
+
 .bg-orb {
   position: fixed;
   width: 420px;
@@ -70,6 +83,10 @@ body {
   padding: 22px;
   border-radius: var(--radius);
   box-shadow: var(--shadow);
+}
+
+body.theme-dark .hero {
+  background: linear-gradient(135deg, #0f2a21 0%, #184033 62%, #133126 100%);
 }
 
 .hero-kicker {
@@ -119,6 +136,15 @@ body {
   border-radius: 12px;
   background: #fff;
   margin-bottom: 12px;
+}
+
+body.theme-dark .form-collapsible {
+  background: #241f19;
+  border-color: #5a4d3d;
+}
+
+body.theme-dark .form-collapsible summary {
+  color: #eadfce;
 }
 
 .form-collapsible summary {
@@ -206,6 +232,11 @@ label {
   z-index: 2;
 }
 
+body.theme-dark .field-include-toggle-inside {
+  background: #2b241c;
+  border-color: #5d513f;
+}
+
 .optional-control-wrap-textarea .field-include-toggle-inside {
   top: 10px;
   transform: none;
@@ -272,6 +303,19 @@ textarea {
   font: inherit;
 }
 
+body.theme-dark input,
+body.theme-dark select,
+body.theme-dark textarea {
+  background: #2b241c;
+  border-color: #5d513f;
+  color: #efe5d5;
+}
+
+body.theme-dark input::placeholder,
+body.theme-dark textarea::placeholder {
+  color: #b8ac97;
+}
+
 input.has-optional-toggle,
 select.has-optional-toggle {
   padding-right: 46px;
@@ -288,6 +332,11 @@ textarea.has-optional-toggle {
 input[type="checkbox"],
 input[type="radio"] {
   accent-color: var(--brand);
+}
+
+body.theme-dark input[type="checkbox"],
+body.theme-dark input[type="radio"] {
+  accent-color: #67dcae;
 }
 
 textarea {
@@ -389,6 +438,14 @@ textarea:focus {
   gap: 8px;
 }
 
+.theme-toggle-btn {
+  margin-left: auto;
+  min-width: 44px;
+  padding: 9px 12px;
+  font-size: 1.05rem;
+  line-height: 1;
+}
+
 .save-status {
   margin: 4px 0 0;
   color: #5f5647;
@@ -428,6 +485,16 @@ button:hover {
   color: #4d4538;
 }
 
+body.theme-dark .ghost-btn {
+  background: #241e18;
+  border-color: #5d513f;
+  color: #e4d7c4;
+}
+
+body.theme-dark .ghost-btn:hover {
+  background: #2c251d;
+}
+
 .ghost-btn:hover {
   background: #fbf7ef;
 }
@@ -436,6 +503,26 @@ button:hover {
   background: #f7ede2;
   border-color: #efdfcc;
   color: #7a4f29;
+}
+
+body.theme-dark .remove-btn {
+  background: #2b2118;
+  border-color: #5f4a36;
+  color: #efc28f;
+}
+
+body.theme-dark .repeat-card {
+  background: #241f19;
+}
+
+body.theme-dark .compact-check {
+  background: #241e18;
+  border-color: #5d513f;
+  color: #e4d7c4;
+}
+
+body.theme-dark .compact-check:hover {
+  background: #2c251d;
 }
 
 .preview-head {
