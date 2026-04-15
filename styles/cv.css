@@ -6,6 +6,8 @@
   min-height: 360px;
   color: #17120d;
   font-family: var(--cv-font-family, Manrope, "Segoe UI", sans-serif);
+  text-align: justify;
+  text-justify: inter-word;
 }
 
 .cv-template h1,
