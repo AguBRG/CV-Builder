@@ -97,6 +97,16 @@ body.theme-dark .hero {
   color: #f2cc8f;
 }
 
+.hero-top {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.hero-theme-toggle {
+  margin-left: auto;
+}
+
 .hero h1 {
   margin: 8px 0 10px;
   font-family: Fraunces, Georgia, serif;
