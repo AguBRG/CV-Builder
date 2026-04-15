@@ -228,16 +228,25 @@ function renderLanguages(list) {
     .join("");
 }
 
+function renderContactLines(basics, includeLinkedin = true) {
+  const contactLines = [basics.city, basics.email, basics.phone];
+
+  if (includeLinkedin) {
+    contactLines.push(basics.linkedin);
+  }
+
+  return contactLines
+    .filter(Boolean)
+    .map((item) => `<p class="meta">${escapeHtml(item)}</p>`)
+    .join("");
+}
+
 function renderAtsCv(data) {
   return `
     <header class="cv-header">
       <h1>${escapeHtml(data.basics.fullName || "Tu nombre")}</h1>
       <p class="headline">${escapeHtml(data.basics.headline || "Tu titular profesional")}</p>
-      <p class="meta">
-        ${escapeHtml(data.basics.city)} | ${escapeHtml(data.basics.email)} | ${escapeHtml(
-    data.basics.phone
-  )} | ${escapeHtml(data.basics.linkedin)}
-      </p>
+      ${renderContactLines(data.basics)}
     </header>
 
     <section class="cv-body">
@@ -274,12 +283,7 @@ function renderPersonalCv(data) {
     <header class="cv-header">
       <h1>${escapeHtml(data.basics.fullName || "Tu nombre")}</h1>
       <p class="headline">${escapeHtml(data.basics.headline || "Tu titular profesional")}</p>
-      <p class="meta">
-        ${escapeHtml(data.basics.city)} | ${escapeHtml(data.basics.email)} | ${escapeHtml(
-    data.basics.phone
-  )}
-      </p>
-      <p class="meta">${escapeHtml(data.basics.linkedin)}</p>
+      ${renderContactLines(data.basics)}
     </header>
 
     <section class="cv-body">
