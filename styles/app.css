@@ -335,6 +335,20 @@ select.has-optional-toggle {
   width: 100%;
 }
 
+[data-date-part="year"][data-date-ui="mobile"] {
+  display: none;
+}
+
+@media (pointer: coarse) {
+  [data-date-part="year"][data-date-ui="mobile"] {
+    display: block;
+  }
+
+  [data-date-part="year"][data-date-ui="desktop"] {
+    display: none;
+  }
+}
+
 textarea.has-optional-toggle {
   padding-right: 50px;
 }

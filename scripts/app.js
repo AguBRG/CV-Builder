@@ -187,6 +187,45 @@ function parseDateParts(value) {
   };
 }
 
+function normalizeYearValue(value) {
+  const cleaned = String(value || "").replace(/\D/g, "").slice(0, 4);
+  if (!/^\d{4}$/.test(cleaned)) {
+    return "";
+  }
+
+  const numericYear = Number(cleaned);
+  const { minYear, maxYear } = getDateYearBounds();
+  if (numericYear < minYear || numericYear > maxYear) {
+    return "";
+  }
+
+  return String(numericYear);
+}
+
+function getActiveDateControl(dateGroup, part) {
+  if (!dateGroup) {
+    return null;
+  }
+
+  const controls = Array.from(dateGroup.querySelectorAll(`[data-date-part="${part}"]`));
+  if (!controls.length) {
+    return null;
+  }
+  if (controls.length === 1) {
+    return controls[0];
+  }
+
+  const prefersCoarsePointer = window.matchMedia("(pointer: coarse)").matches;
+  const mobileControl = controls.find((control) => control.dataset.dateUi === "mobile");
+  const desktopControl = controls.find((control) => control.dataset.dateUi === "desktop");
+
+  if (prefersCoarsePointer) {
+    return mobileControl || controls[0];
+  }
+
+  return desktopControl || controls[0];
+}
+
 function getDateGroupControls(control) {
   if (!control) {
     return { monthSelect: null, yearSelect: null };
@@ -198,8 +237,8 @@ function getDateGroupControls(control) {
   }
 
   return {
-    monthSelect: dateGroup.querySelector('[data-date-part="month"]'),
-    yearSelect: dateGroup.querySelector('[data-date-part="year"]')
+    monthSelect: getActiveDateControl(dateGroup, "month"),
+    yearSelect: getActiveDateControl(dateGroup, "year")
   };
 }
 
@@ -225,7 +264,8 @@ function getDateValueFromControl(control, includeDisabled = false) {
     return "";
   }
 
-  return composeDateValue(monthSelect.value, yearSelect.value);
+  const normalizedYear = normalizeYearValue(yearSelect.value);
+  return composeDateValue(monthSelect.value, normalizedYear);
 }
 
 function setDateValueToControl(control, value) {
@@ -235,8 +275,15 @@ function setDateValueToControl(control, value) {
   }
 
   const { month, year } = parseDateParts(value);
+  const dateGroup = monthSelect.closest("[data-date-group]");
   monthSelect.value = month;
-  yearSelect.value = year;
+  if (dateGroup) {
+    dateGroup.querySelectorAll('[data-date-part="year"]').forEach((yearControl) => {
+      yearControl.value = year;
+    });
+  } else {
+    yearSelect.value = year;
+  }
 }
 
 function populateMonthSelect(select) {
@@ -267,22 +314,48 @@ function populateYearSelect(select) {
   }
 
   const placeholder = select.dataset.datePlaceholder || "Año";
-  select.innerHTML = "";
 
-  const emptyOption = document.createElement("option");
-  emptyOption.value = "";
-  emptyOption.textContent = placeholder;
-  select.appendChild(emptyOption);
+  if (select.tagName === "SELECT") {
+    select.innerHTML = "";
 
-  const { minYear, maxYear } = getDateYearBounds();
-  for (let year = maxYear; year >= minYear; year -= 1) {
-    const option = document.createElement("option");
-    option.value = String(year);
-    option.textContent = String(year);
-    select.appendChild(option);
+    const emptyOption = document.createElement("option");
+    emptyOption.value = "";
+    emptyOption.textContent = placeholder;
+    select.appendChild(emptyOption);
+
+    const { minYear, maxYear } = getDateYearBounds();
+    for (let year = maxYear; year >= minYear; year -= 1) {
+      const option = document.createElement("option");
+      option.value = String(year);
+      option.textContent = String(year);
+      select.appendChild(option);
+    }
+  } else {
+    select.placeholder = placeholder;
+    if (!select.getAttribute("list")) {
+      select.setAttribute("list", "yearOptionsList");
+    }
+    populateYearDatalist();
   }
 
   select.dataset.datePopulated = "true";
+}
+
+function populateYearDatalist() {
+  const datalist = document.getElementById("yearOptionsList");
+  if (!datalist || datalist.dataset.populated === "true") {
+    return;
+  }
+
+  const { minYear, maxYear } = getDateYearBounds();
+  datalist.innerHTML = "";
+  for (let year = maxYear; year >= minYear; year -= 1) {
+    const option = document.createElement("option");
+    option.value = String(year);
+    datalist.appendChild(option);
+  }
+
+  datalist.dataset.populated = "true";
 }
 
 function populateDateSelects(root) {
@@ -290,8 +363,8 @@ function populateDateSelects(root) {
     populateMonthSelect(select);
   });
 
-  root.querySelectorAll('select[data-date-part="year"]').forEach((select) => {
-    populateYearSelect(select);
+  root.querySelectorAll('[data-date-part="year"]').forEach((control) => {
+    populateYearSelect(control);
   });
 }
 
@@ -301,7 +374,14 @@ function setDateGroupDisabled(control, disabled) {
     monthSelect.disabled = disabled;
   }
   if (yearSelect) {
-    yearSelect.disabled = disabled;
+    const dateGroup = yearSelect.closest("[data-date-group]");
+    if (dateGroup) {
+      dateGroup.querySelectorAll('[data-date-part="year"]').forEach((yearControl) => {
+        yearControl.disabled = disabled;
+      });
+    } else {
+      yearSelect.disabled = disabled;
+    }
   }
 }
 
@@ -319,21 +399,34 @@ function setupDateSelectors(root) {
   populateDateSelects(root);
 
   root.querySelectorAll('[data-date-group]').forEach((dateGroup) => {
-    const monthSelect = dateGroup.querySelector('[data-date-part="month"]');
-    const yearSelect = dateGroup.querySelector('[data-date-part="year"]');
+    const monthSelect = getActiveDateControl(dateGroup, "month");
+    const yearSelect = getActiveDateControl(dateGroup, "year");
 
     if (!monthSelect || !yearSelect || dateGroup.dataset.dateSyncBound === "true") {
       return;
     }
 
     const syncState = () => {
-      if (!yearSelect.value) {
+      const normalizedYear = normalizeYearValue(yearSelect.value);
+      if (yearSelect.value !== normalizedYear) {
+        yearSelect.value = normalizedYear;
+      }
+
+      dateGroup.querySelectorAll('[data-date-part="year"]').forEach((yearControl) => {
+        if (yearControl !== yearSelect) {
+          yearControl.value = normalizedYear;
+        }
+      });
+
+      if (!normalizedYear) {
         monthSelect.value = "";
       }
     };
 
     monthSelect.addEventListener("change", syncState);
+    yearSelect.addEventListener("input", syncState);
     yearSelect.addEventListener("change", syncState);
+    yearSelect.addEventListener("blur", syncState);
     dateGroup.dataset.dateSyncBound = "true";
   });
 }
