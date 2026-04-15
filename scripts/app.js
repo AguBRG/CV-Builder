@@ -62,6 +62,7 @@ function createDefaultOptionalFields() {
   return {
     fullName: true,
     headline: true,
+    country: true,
     city: true,
     email: true,
     phone: true,
@@ -362,6 +363,7 @@ function getFormData() {
     basics: {
       fullName: getRawFieldValue("fullName"),
       headline: getRawFieldValue("headline"),
+      country: getRawFieldValue("country"),
       city: getRawFieldValue("city"),
       email: getRawFieldValue("email"),
       phone: getRawFieldValue("phone"),
@@ -553,8 +555,15 @@ function renderContactValue(type, value) {
 }
 
 function renderContactLines(basics, includeLinkedin = true) {
+  const location = [
+    getEnabledValue(basics, "city"),
+    getEnabledValue(basics, "country")
+  ]
+    .filter(Boolean)
+    .join(", ");
+
   const contactLines = [
-    { type: "text", value: getEnabledValue(basics, "city") },
+    { type: "text", value: location },
     { type: "email", value: getEnabledValue(basics, "email") },
     { type: "phone", value: getEnabledValue(basics, "phone") }
   ];
@@ -743,6 +752,7 @@ function getAllCvText(data) {
   return [
     getOptionalValue(data.optionalFields, "fullName", data.basics.fullName),
     getOptionalValue(data.optionalFields, "headline", data.basics.headline),
+    getOptionalValue(data.optionalFields, "country", data.basics.country),
     getOptionalValue(data.optionalFields, "city", data.basics.city),
     getOptionalValue(data.optionalFields, "email", data.basics.email),
     getOptionalValue(data.optionalFields, "phone", data.basics.phone),
@@ -815,6 +825,7 @@ function loadDraft() {
   [
     "fullName",
     "headline",
+    "country",
     "city",
     "email",
     "phone",
