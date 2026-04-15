@@ -236,8 +236,18 @@
         </div>
         <div class="field-grid three">
           <label>Ubicación<input data-field="location" /></label>
-          <label>Inicio<input data-field="start" placeholder="Mar 2022" /></label>
-          <label>Fin<input data-field="end" placeholder="Actual" /></label>
+          <label>Inicio
+            <span class="date-group" data-date-group="start">
+              <select data-field="start" data-date-part="month" data-date-placeholder="Mes"></select>
+              <select data-date-linked-field="start" data-date-part="year" data-date-placeholder="Año"></select>
+            </span>
+          </label>
+          <label>Fin
+            <span class="date-group" data-date-group="end">
+              <select data-field="end" data-date-part="month" data-date-placeholder="Mes"></select>
+              <select data-date-linked-field="end" data-date-part="year" data-date-placeholder="Año"></select>
+            </span>
+          </label>
         </div>
         <label>Contacto de referencia
           <input
@@ -262,8 +272,18 @@
           <label>Institución<input data-field="institution" required /></label>
         </div>
         <div class="field-grid two">
-          <label>Inicio<input data-field="start" placeholder="2018" /></label>
-          <label>Fin<input data-field="end" placeholder="2022" /></label>
+          <label>Inicio
+            <span class="date-group" data-date-group="start">
+              <select data-field="start" data-date-part="month" data-date-placeholder="Mes"></select>
+              <select data-date-linked-field="start" data-date-part="year" data-date-placeholder="Año"></select>
+            </span>
+          </label>
+          <label>Fin
+            <span class="date-group" data-date-group="end">
+              <select data-field="end" data-date-part="month" data-date-placeholder="Mes"></select>
+              <select data-date-linked-field="end" data-date-part="year" data-date-placeholder="Año"></select>
+            </span>
+          </label>
         </div>
         <label class="inline-check">
           <input type="checkbox" data-field="inProgress" />
@@ -283,8 +303,18 @@
           <label>Institución<input data-field="institution" required /></label>
         </div>
         <div class="field-grid two">
-          <label>Inicio<input data-field="start" placeholder="2024" /></label>
-          <label>Fin<input data-field="end" placeholder="2025" /></label>
+          <label>Inicio
+            <span class="date-group" data-date-group="start">
+              <select data-field="start" data-date-part="month" data-date-placeholder="Mes"></select>
+              <select data-date-linked-field="start" data-date-part="year" data-date-placeholder="Año"></select>
+            </span>
+          </label>
+          <label>Fin
+            <span class="date-group" data-date-group="end">
+              <select data-field="end" data-date-part="month" data-date-placeholder="Mes"></select>
+              <select data-date-linked-field="end" data-date-part="year" data-date-placeholder="Año"></select>
+            </span>
+          </label>
         </div>
         <label class="inline-check">
           <input type="checkbox" data-field="inProgress" />

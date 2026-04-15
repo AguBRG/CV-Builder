@@ -15,6 +15,47 @@ const courseTemplate = document.querySelector("#courseTemplate");
 const languageTemplate = document.querySelector("#languageTemplate");
 
 const STORAGE_KEY = "cv_builder_draft_v1";
+const MONTHS_ES = [
+  "Enero",
+  "Febrero",
+  "Marzo",
+  "Abril",
+  "Mayo",
+  "Junio",
+  "Julio",
+  "Agosto",
+  "Septiembre",
+  "Octubre",
+  "Noviembre",
+  "Diciembre"
+];
+const MONTH_ALIASES = {
+  ene: "Enero",
+  enero: "Enero",
+  feb: "Febrero",
+  febrero: "Febrero",
+  mar: "Marzo",
+  marzo: "Marzo",
+  abr: "Abril",
+  abril: "Abril",
+  may: "Mayo",
+  mayo: "Mayo",
+  jun: "Junio",
+  junio: "Junio",
+  jul: "Julio",
+  julio: "Julio",
+  ago: "Agosto",
+  agosto: "Agosto",
+  sep: "Septiembre",
+  set: "Septiembre",
+  septiembre: "Septiembre",
+  oct: "Octubre",
+  octubre: "Octubre",
+  nov: "Noviembre",
+  noviembre: "Noviembre",
+  dic: "Diciembre",
+  diciembre: "Diciembre"
+};
 const FONT_PRESETS = {
   manrope: {
     label: "Manrope",
@@ -59,6 +100,225 @@ const FONT_PRESETS = {
 };
 const DEFAULT_FONT_PRESET = "manrope";
 let autoSaveTimer = null;
+
+function getDateYearBounds() {
+  const currentYear = new Date().getFullYear();
+  return {
+    minYear: 1940,
+    maxYear: currentYear
+  };
+}
+
+function normalizeMonthName(value) {
+  if (!value) {
+    return "";
+  }
+
+  const key = value
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(".", "")
+    .trim();
+
+  return MONTH_ALIASES[key] || "";
+}
+
+function normalizeDateValue(value) {
+  const raw = (value || "").trim();
+  if (!raw) {
+    return "";
+  }
+
+  const directMonthYear = raw.match(/^([A-Za-záéíóúÁÉÍÓÚñÑ.]+)\s+(\d{4})$/);
+  if (directMonthYear) {
+    const normalizedMonth = normalizeMonthName(directMonthYear[1]);
+    if (normalizedMonth) {
+      return `${normalizedMonth} ${directMonthYear[2]}`;
+    }
+  }
+
+  const numericMonthYear = raw.match(/^(\d{4})-(\d{2})$/);
+  if (numericMonthYear) {
+    const monthNumber = Number(numericMonthYear[2]);
+    if (monthNumber >= 1 && monthNumber <= 12) {
+      return `${MONTHS_ES[monthNumber - 1]} ${numericMonthYear[1]}`;
+    }
+  }
+
+  return raw;
+}
+
+function parseDateParts(value) {
+  const normalized = normalizeDateValue(value);
+
+  if (/^\d{4}$/.test(normalized)) {
+    return { month: "", year: normalized };
+  }
+
+  const match = normalized.match(/^([A-Za-záéíóúÁÉÍÓÚñÑ]+)\s+(\d{4})$/);
+  if (!match) {
+    return { month: "", year: "" };
+  }
+
+  const month = normalizeMonthName(match[1]);
+  const year = match[2];
+  return {
+    month,
+    year: /^\d{4}$/.test(year) ? year : ""
+  };
+}
+
+function getDateGroupControls(control) {
+  if (!control) {
+    return { monthSelect: null, yearSelect: null };
+  }
+
+  const dateGroup = control.closest("[data-date-group]");
+  if (!dateGroup) {
+    return { monthSelect: control, yearSelect: null };
+  }
+
+  return {
+    monthSelect: dateGroup.querySelector('[data-date-part="month"]'),
+    yearSelect: dateGroup.querySelector('[data-date-part="year"]')
+  };
+}
+
+function composeDateValue(monthValue, yearValue) {
+  if (monthValue && yearValue) {
+    return `${monthValue} ${yearValue}`;
+  }
+
+  if (yearValue) {
+    return yearValue;
+  }
+
+  return "";
+}
+
+function getDateValueFromControl(control, includeDisabled = false) {
+  const { monthSelect, yearSelect } = getDateGroupControls(control);
+  if (!monthSelect || !yearSelect) {
+    return "";
+  }
+
+  if (!includeDisabled && monthSelect.dataset.enabled === "false") {
+    return "";
+  }
+
+  return composeDateValue(monthSelect.value, yearSelect.value);
+}
+
+function setDateValueToControl(control, value) {
+  const { monthSelect, yearSelect } = getDateGroupControls(control);
+  if (!monthSelect || !yearSelect) {
+    return;
+  }
+
+  const { month, year } = parseDateParts(value);
+  monthSelect.value = month;
+  yearSelect.value = year;
+}
+
+function populateMonthSelect(select) {
+  if (!select || select.dataset.datePopulated === "true") {
+    return;
+  }
+
+  const placeholder = select.dataset.datePlaceholder || "Mes";
+  select.innerHTML = "";
+  const emptyOption = document.createElement("option");
+  emptyOption.value = "";
+  emptyOption.textContent = placeholder;
+  select.appendChild(emptyOption);
+
+  MONTHS_ES.forEach((month) => {
+    const option = document.createElement("option");
+    option.value = month;
+    option.textContent = month;
+    select.appendChild(option);
+  });
+
+  select.dataset.datePopulated = "true";
+}
+
+function populateYearSelect(select) {
+  if (!select || select.dataset.datePopulated === "true") {
+    return;
+  }
+
+  const placeholder = select.dataset.datePlaceholder || "Año";
+  select.innerHTML = "";
+
+  const emptyOption = document.createElement("option");
+  emptyOption.value = "";
+  emptyOption.textContent = placeholder;
+  select.appendChild(emptyOption);
+
+  const { minYear, maxYear } = getDateYearBounds();
+  for (let year = maxYear; year >= minYear; year -= 1) {
+    const option = document.createElement("option");
+    option.value = String(year);
+    option.textContent = String(year);
+    select.appendChild(option);
+  }
+
+  select.dataset.datePopulated = "true";
+}
+
+function populateDateSelects(root) {
+  root.querySelectorAll('select[data-date-part="month"]').forEach((select) => {
+    populateMonthSelect(select);
+  });
+
+  root.querySelectorAll('select[data-date-part="year"]').forEach((select) => {
+    populateYearSelect(select);
+  });
+}
+
+function setDateGroupDisabled(control, disabled) {
+  const { monthSelect, yearSelect } = getDateGroupControls(control);
+  if (monthSelect) {
+    monthSelect.disabled = disabled;
+  }
+  if (yearSelect) {
+    yearSelect.disabled = disabled;
+  }
+}
+
+function shouldForceEndDateDisabled(control) {
+  if (!control || control.dataset.field !== "end") {
+    return false;
+  }
+
+  const card = control.closest(".education-item, .course-item");
+  const inProgressCheckbox = card?.querySelector('[data-field="inProgress"]');
+  return Boolean(inProgressCheckbox?.checked);
+}
+
+function setupDateSelectors(root) {
+  populateDateSelects(root);
+
+  root.querySelectorAll('[data-date-group]').forEach((dateGroup) => {
+    const monthSelect = dateGroup.querySelector('[data-date-part="month"]');
+    const yearSelect = dateGroup.querySelector('[data-date-part="year"]');
+
+    if (!monthSelect || !yearSelect || dateGroup.dataset.dateSyncBound === "true") {
+      return;
+    }
+
+    const syncState = () => {
+      if (!yearSelect.value) {
+        monthSelect.value = "";
+      }
+    };
+
+    monthSelect.addEventListener("change", syncState);
+    yearSelect.addEventListener("change", syncState);
+    dateGroup.dataset.dateSyncBound = "true";
+  });
+}
 
 function createDefaultOptionalFields() {
   return {
@@ -170,7 +430,15 @@ function getOptionalToggleId(control) {
 
 function setControlEnabledState(control, enabled) {
   control.dataset.enabled = enabled ? "true" : "false";
-  control.disabled = !enabled;
+  if (control.dataset.datePart === "month") {
+    setDateGroupDisabled(control, !enabled || shouldForceEndDateDisabled(control));
+    const { yearSelect } = getDateGroupControls(control);
+    if (yearSelect) {
+      yearSelect.dataset.enabled = control.dataset.enabled;
+    }
+  } else {
+    control.disabled = !enabled;
+  }
   control.closest("label")?.classList.toggle("field-is-off", !enabled);
 }
 
@@ -179,7 +447,11 @@ function enhanceOptionalLabel(label) {
     return;
   }
 
-  const control = label.querySelector("input, textarea, select");
+  const dateGroup = label.querySelector("[data-date-group]");
+  const control = dateGroup
+    ? dateGroup.querySelector('[data-date-part="month"]')
+    : label.querySelector("input, textarea, select");
+  const targetNode = dateGroup || control;
 
   if (!control || control.type === "radio" || control.type === "checkbox") {
     return;
@@ -188,7 +460,7 @@ function enhanceOptionalLabel(label) {
   const nodesBeforeControl = [];
   let currentNode = label.firstChild;
 
-  while (currentNode && currentNode !== control) {
+  while (currentNode && currentNode !== targetNode) {
     const nextNode = currentNode.nextSibling;
     nodesBeforeControl.push(currentNode);
     currentNode = nextNode;
@@ -206,6 +478,9 @@ function enhanceOptionalLabel(label) {
   if (control.tagName === "TEXTAREA") {
     controlWrap.classList.add("optional-control-wrap-textarea");
   }
+  if (dateGroup) {
+    controlWrap.classList.add("optional-control-wrap-date");
+  }
 
   const toggle = document.createElement("span");
   toggle.className = "field-include-toggle field-include-toggle-inside";
@@ -217,10 +492,14 @@ function enhanceOptionalLabel(label) {
 
   toggle.append(checkbox);
   header.append(text);
-  label.insertBefore(header, control);
-  label.insertBefore(controlWrap, control);
-  controlWrap.append(control, toggle);
-  control.classList.add("has-optional-toggle");
+  label.insertBefore(header, targetNode);
+  label.insertBefore(controlWrap, targetNode);
+  controlWrap.append(targetNode, toggle);
+  if (dateGroup) {
+    dateGroup.classList.add("has-optional-toggle-group");
+  } else {
+    control.classList.add("has-optional-toggle");
+  }
   label.dataset.optionalEnhanced = "true";
 
   checkbox.addEventListener("change", () => {
@@ -256,6 +535,10 @@ function getControlValue(control, includeDisabled = false) {
     return "";
   }
 
+  if (control.dataset.datePart === "month") {
+    return getDateValueFromControl(control, includeDisabled);
+  }
+
   if (!includeDisabled && control.dataset.enabled === "false") {
     return "";
   }
@@ -287,25 +570,24 @@ function collectRepeatOptionalStates(item, defaults) {
 
 function updateInProgressState(card) {
   const inProgressCheckbox = card.querySelector('[data-field="inProgress"]');
-  const endInput = card.querySelector('[data-field="end"]');
+  const endInput = card.querySelector('[data-field="end"][data-date-part="month"]');
 
   if (!inProgressCheckbox || !endInput) {
     return;
   }
 
   if (inProgressCheckbox.checked) {
-    if (endInput.value.trim() && endInput.value.trim().toLowerCase() !== "en curso") {
-      endInput.dataset.previousEndValue = endInput.value;
+    const previousValue = getDateValueFromControl(endInput, true);
+    if (previousValue) {
+      endInput.dataset.previousEndValue = previousValue;
     }
 
-    endInput.value = "En curso";
-    endInput.readOnly = true;
+    setDateValueToControl(endInput, "");
+    setDateGroupDisabled(endInput, true);
   } else {
-    if (endInput.value.trim().toLowerCase() === "en curso") {
-      endInput.value = endInput.dataset.previousEndValue || "";
-    }
-
-    endInput.readOnly = false;
+    setDateValueToControl(endInput, endInput.dataset.previousEndValue || "");
+    const shouldKeepDisabled = endInput.dataset.enabled === "false";
+    setDateGroupDisabled(endInput, shouldKeepDisabled);
     delete endInput.dataset.previousEndValue;
   }
 }
@@ -331,6 +613,7 @@ function bindInProgressToggle(card) {
 
 function createRepeatItem(template, listEl) {
   const clone = template.content.firstElementChild.cloneNode(true);
+  setupDateSelectors(clone);
   enhanceOptionalFields(clone);
   bindInProgressToggle(clone);
 
@@ -872,7 +1155,11 @@ function saveDraft() {
 function setRepeatValue(root, field, value) {
   const el = root.querySelector(`[data-field="${field}"]`);
   if (el) {
-    el.value = value || "";
+    if (el.dataset.datePart === "month") {
+      setDateValueToControl(el, value || "");
+    } else {
+      el.value = value || "";
+    }
   }
 }
 
@@ -1108,5 +1395,6 @@ form.addEventListener("submit", (event) => {
 });
 
 enhanceOptionalFields(form);
+setupDateSelectors(form);
 loadDraft();
 renderCv(getFormData());
