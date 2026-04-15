@@ -198,6 +198,15 @@ textarea:focus {
   gap: 12px;
 }
 
+.controls-top {
+  margin-top: 0;
+  margin-bottom: 14px;
+  border-top: 0;
+  border-bottom: 1px solid var(--line);
+  padding-top: 0;
+  padding-bottom: 14px;
+}
+
 .layout-pick {
   display: flex;
   gap: 14px;

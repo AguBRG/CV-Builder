@@ -522,14 +522,21 @@ document.querySelector("#addLanguage").addEventListener("click", () => {
   scheduleAutoSave();
 });
 
-document.querySelector("#saveDraft").addEventListener("click", () => {
-  saveDraft();
-  runAtsHint();
-  alert("Borrador guardado en este navegador.");
+document.querySelectorAll('[data-action="save-draft"]').forEach((button) => {
+  button.addEventListener("click", () => {
+    saveDraft();
+    runAtsHint();
+    alert("Borrador guardado en este navegador.");
+  });
 });
 
-document.querySelector("#downloadHtml").addEventListener("click", downloadHtml);
-document.querySelector("#printPdf").addEventListener("click", printPdf);
+document.querySelectorAll('[data-action="download-html"]').forEach((button) => {
+  button.addEventListener("click", downloadHtml);
+});
+
+document.querySelectorAll('[data-action="print-pdf"]').forEach((button) => {
+  button.addEventListener("click", printPdf);
+});
 
 form.addEventListener("input", () => {
   runAtsHint();
