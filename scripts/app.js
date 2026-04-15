@@ -200,7 +200,7 @@ function renderExperience(list) {
 
 function renderEducation(list) {
   if (!list.length) {
-    return "<p class=\"muted\">Agrega tu formacion academica.</p>";
+    return "<p class=\"muted\">Agrega tu formación académica.</p>";
   }
 
   return list
@@ -261,7 +261,7 @@ function renderAtsCv(data) {
       </section>
 
       <section>
-        <h2>Educacion</h2>
+        <h2>Educación</h2>
         ${renderEducation(data.education)}
       </section>
 
@@ -303,7 +303,7 @@ function renderPersonalCv(data) {
         </section>
 
         <section>
-          <h2>Educacion</h2>
+          <h2>Educación</h2>
           ${renderEducation(data.education)}
         </section>
       </aside>
@@ -329,7 +329,7 @@ function renderCv(data) {
   preview.classList.toggle("cv-ats", isAts);
   preview.classList.toggle("cv-personal", !isAts);
   preview.style.setProperty("--cv-font-family", getFontStack(fontPreset));
-  previewMeta.textContent = `Formato actual: ${isAts ? "ATS" : "Personal"} | Tipografia: ${getFontLabel(
+  previewMeta.textContent = `Formato actual: ${isAts ? "ATS" : "Personal"} | Tipografía: ${getFontLabel(
     fontPreset
   )}`;
 
@@ -383,7 +383,7 @@ function runAtsHint() {
 function saveDraft() {
   const data = getFormData();
   localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-  markSaveStatus("Cambios guardados automaticamente en este navegador.", true);
+  markSaveStatus("Cambios guardados automáticamente en este navegador.", true);
 }
 
 function setRepeatValue(root, field, value) {
@@ -398,7 +398,7 @@ function loadDraft() {
   if (!raw) {
     addDefaultItems();
     runAtsHint();
-    markSaveStatus("Sin borrador previo. Los cambios se guardaran automaticamente.");
+    markSaveStatus("Sin borrador previo. Los cambios se guardarán automáticamente.");
     return;
   }
 
@@ -410,7 +410,7 @@ function loadDraft() {
     localStorage.removeItem(STORAGE_KEY);
     addDefaultItems();
     runAtsHint();
-    markSaveStatus("No se pudo leer el borrador anterior. Se reinicio el formulario.");
+    markSaveStatus("No se pudo leer el borrador anterior. Se reinició el formulario.");
     return;
   }
 
@@ -460,7 +460,7 @@ function loadDraft() {
   });
 
   runAtsHint();
-  markSaveStatus("Borrador recuperado. Los cambios se guardan automaticamente.", true);
+  markSaveStatus("Borrador recuperado. Los cambios se guardan automáticamente.", true);
 }
 
 function addDefaultItems() {

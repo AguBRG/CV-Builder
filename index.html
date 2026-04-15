@@ -6,7 +6,7 @@
     <title>CV Builder | ATS + Personal</title>
     <meta
       name="description"
-      content="Crea CVs en formato ATS de 1 columna o formato personal de 2 columnas desde la misma informacion."
+      content="Crea CVs en formato ATS de 1 columna o formato personal de 2 columnas desde la misma información."
     />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -26,7 +26,7 @@
         <p class="hero-kicker">CV Builder</p>
         <h1>Una sola carga, dos formatos de CV</h1>
         <p>
-          Completa tus datos, elegi diseno ATS (1 columna) o personal (2 columnas), y
+          Completa tus datos, elegí diseño ATS (1 columna) o personal (2 columnas), y
           genera un CV listo para postular.
         </p>
       </header>
@@ -68,7 +68,7 @@
                   <input type="email" name="email" placeholder="correo@dominio.com" />
                 </label>
                 <label>
-                  Telefono
+                  Teléfono
                   <input name="phone" placeholder="+54 11..." />
                 </label>
               </div>
@@ -86,7 +86,7 @@
                   <textarea
                     name="summary"
                     rows="4"
-                    placeholder="3 a 5 lineas con experiencia, foco y resultados medibles"
+                    placeholder="3 a 5 líneas con experiencia, foco y resultados medibles"
                   ></textarea>
                 </label>
               </div>
@@ -115,11 +115,11 @@
           </details>
 
           <details class="form-collapsible" open>
-            <summary>Educacion</summary>
+            <summary>Educación</summary>
             <section class="repeat-section collapsible-content">
               <div class="repeat-head">
-                <h3>Educacion</h3>
-                <button type="button" id="addEducation" class="ghost-btn">+ Agregar educacion</button>
+                <h3>Educación</h3>
+                <button type="button" id="addEducation" class="ghost-btn">+ Agregar educación</button>
               </div>
               <div id="educationList"></div>
             </section>
@@ -137,13 +137,13 @@
           </details>
 
           <details class="form-collapsible" open>
-            <summary>Chequeo ATS rapido</summary>
+            <summary>Chequeo ATS rápido</summary>
             <section class="repeat-section collapsible-content">
               <label>
                 Keywords del aviso (separadas por coma)
                 <input
                   name="jobKeywords"
-                  placeholder="SQL, ETL, dashboard, analisis, python"
+                  placeholder="SQL, ETL, dashboard, análisis, python"
                 />
               </label>
               <p id="atsHint" class="hint"></p>
@@ -151,19 +151,19 @@
           </details>
 
           <details class="form-collapsible" open>
-            <summary>Formato y exportacion</summary>
+            <summary>Formato y exportación</summary>
             <section class="controls collapsible-content">
               <div class="field-grid one">
                 <label>
-                  Tipografia del CV
+                  Tipografía del CV
                   <select name="fontPreset">
                     <option value="manrope" selected>Manrope (moderna limpia)</option>
                     <option value="montserrat">Montserrat (corporativa)</option>
                     <option value="poppins">Poppins (redondeada actual)</option>
                     <option value="sourceSans">Source Sans 3 (profesional)</option>
                     <option value="nunito">Nunito (amigable)</option>
-                    <option value="firaSans">Fira Sans (tecnica clara)</option>
-                    <option value="merriweather">Merriweather (serif clasica)</option>
+                    <option value="firaSans">Fira Sans (técnica clara)</option>
+                    <option value="merriweather">Merriweather (serif clásica)</option>
                     <option value="lora">Lora (serif editorial)</option>
                     <option value="robotoSlab">Roboto Slab (slab formal)</option>
                     <option value="playfair">Playfair Display (elegante)</option>
@@ -183,7 +183,7 @@
                 <button type="button" data-action="download-html" class="ghost-btn">Descargar HTML</button>
                 <button type="button" data-action="print-pdf" class="ghost-btn">Imprimir / PDF</button>
               </div>
-              <p id="saveStatus" class="save-status" aria-live="polite">Sin cambios guardados aun.</p>
+              <p id="saveStatus" class="save-status" aria-live="polite">Sin cambios guardados aún.</p>
             </section>
           </details>
         </form>
@@ -209,11 +209,11 @@
           <label>Empresa<input data-field="company" required /></label>
         </div>
         <div class="field-grid three">
-          <label>Ubicacion<input data-field="location" /></label>
+          <label>Ubicación<input data-field="location" /></label>
           <label>Inicio<input data-field="start" placeholder="Mar 2022" /></label>
           <label>Fin<input data-field="end" placeholder="Actual" /></label>
         </div>
-        <label>Logros (una linea por punto)
+        <label>Logros (una línea por punto)
           <textarea data-field="bullets" rows="4" placeholder="Aumente X%...&#10;Reduje Y horas..."></textarea>
         </label>
       </article>
@@ -222,12 +222,12 @@
     <template id="educationTemplate">
       <article class="repeat-card education-item">
         <div class="repeat-top">
-          <h4>Educacion</h4>
+          <h4>Educación</h4>
           <button type="button" class="remove-btn">Quitar</button>
         </div>
         <div class="field-grid two">
-          <label>Titulo<input data-field="degree" required /></label>
-          <label>Institucion<input data-field="institution" required /></label>
+          <label>Título<input data-field="degree" required /></label>
+          <label>Institución<input data-field="institution" required /></label>
         </div>
         <div class="field-grid two">
           <label>Inicio<input data-field="start" placeholder="2018" /></label>
