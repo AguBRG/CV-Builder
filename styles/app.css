@@ -114,6 +114,41 @@ body {
   margin-bottom: 12px;
 }
 
+.form-collapsible {
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: #fff;
+  margin-bottom: 12px;
+}
+
+.form-collapsible summary {
+  cursor: pointer;
+  list-style: none;
+  font-weight: 800;
+  color: var(--ink);
+  padding: 12px 14px;
+}
+
+.form-collapsible summary::-webkit-details-marker {
+  display: none;
+}
+
+.form-collapsible summary::after {
+  content: "+";
+  float: right;
+  color: var(--brand);
+  font-size: 1.1rem;
+  line-height: 1;
+}
+
+.form-collapsible[open] summary::after {
+  content: "-";
+}
+
+.collapsible-content {
+  padding: 0 14px 14px;
+}
+
 .field-grid.one {
   grid-template-columns: 1fr;
 }
@@ -161,6 +196,13 @@ textarea:focus {
   border-top: 1px solid var(--line);
   margin-top: 14px;
   padding-top: 14px;
+}
+
+.form-collapsible .repeat-section,
+.form-collapsible .controls {
+  border-top: 0;
+  margin-top: 0;
+  padding-top: 0;
 }
 
 .repeat-head {

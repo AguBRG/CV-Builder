@@ -44,131 +44,148 @@
             </div>
           </section>
 
-          <div class="field-grid two">
-            <label>
-              Nombre completo
-              <input name="fullName" required placeholder="Nombre Apellido" />
-            </label>
-            <label>
-              Titular profesional
-              <input name="headline" required placeholder="Data Analyst | BI | SQL" />
-            </label>
-          </div>
+          <details class="form-collapsible" open>
+            <summary>Datos del CV</summary>
+            <div class="collapsible-content">
+              <div class="field-grid two">
+                <label>
+                  Nombre completo
+                  <input name="fullName" required placeholder="Nombre Apellido" />
+                </label>
+                <label>
+                  Titular profesional
+                  <input name="headline" required placeholder="Data Analyst | BI | SQL" />
+                </label>
+              </div>
 
-          <div class="field-grid three">
-            <label>
-              Ciudad
-              <input name="city" placeholder="Buenos Aires" />
-            </label>
-            <label>
-              Email
-              <input type="email" name="email" placeholder="correo@dominio.com" />
-            </label>
-            <label>
-              Telefono
-              <input name="phone" placeholder="+54 11..." />
-            </label>
-          </div>
+              <div class="field-grid three">
+                <label>
+                  Ciudad
+                  <input name="city" placeholder="Buenos Aires" />
+                </label>
+                <label>
+                  Email
+                  <input type="email" name="email" placeholder="correo@dominio.com" />
+                </label>
+                <label>
+                  Telefono
+                  <input name="phone" placeholder="+54 11..." />
+                </label>
+              </div>
 
-          <div class="field-grid one">
-            <label>
-              LinkedIn
-              <input name="linkedin" placeholder="https://www.linkedin.com/in/..." />
-            </label>
-          </div>
+              <div class="field-grid one">
+                <label>
+                  LinkedIn
+                  <input name="linkedin" placeholder="https://www.linkedin.com/in/..." />
+                </label>
+              </div>
 
-          <div class="field-grid one">
-            <label>
-              Resumen profesional
-              <textarea
-                name="summary"
-                rows="4"
-                placeholder="3 a 5 lineas con experiencia, foco y resultados medibles"
-              ></textarea>
-            </label>
-          </div>
+              <div class="field-grid one">
+                <label>
+                  Resumen profesional
+                  <textarea
+                    name="summary"
+                    rows="4"
+                    placeholder="3 a 5 lineas con experiencia, foco y resultados medibles"
+                  ></textarea>
+                </label>
+              </div>
 
-          <div class="field-grid one">
-            <label>
-              Habilidades (separadas por coma)
-              <input
-                name="skills"
-                placeholder="SQL, Power BI, Python, Excel, KPIs"
-              />
-            </label>
-          </div>
-
-          <section class="repeat-section">
-            <div class="repeat-head">
-              <h3>Experiencia</h3>
-              <button type="button" id="addExperience" class="ghost-btn">+ Agregar experiencia</button>
+              <div class="field-grid one">
+                <label>
+                  Habilidades (separadas por coma)
+                  <input
+                    name="skills"
+                    placeholder="SQL, Power BI, Python, Excel, KPIs"
+                  />
+                </label>
+              </div>
             </div>
-            <div id="experienceList"></div>
-          </section>
+          </details>
 
-          <section class="repeat-section">
-            <div class="repeat-head">
-              <h3>Educacion</h3>
-              <button type="button" id="addEducation" class="ghost-btn">+ Agregar educacion</button>
-            </div>
-            <div id="educationList"></div>
-          </section>
+          <details class="form-collapsible" open>
+            <summary>Experiencia</summary>
+            <section class="repeat-section collapsible-content">
+              <div class="repeat-head">
+                <h3>Experiencia</h3>
+                <button type="button" id="addExperience" class="ghost-btn">+ Agregar experiencia</button>
+              </div>
+              <div id="experienceList"></div>
+            </section>
+          </details>
 
-          <section class="repeat-section">
-            <div class="repeat-head">
-              <h3>Idiomas</h3>
-              <button type="button" id="addLanguage" class="ghost-btn">+ Agregar idioma</button>
-            </div>
-            <div id="languageList"></div>
-          </section>
+          <details class="form-collapsible" open>
+            <summary>Educacion</summary>
+            <section class="repeat-section collapsible-content">
+              <div class="repeat-head">
+                <h3>Educacion</h3>
+                <button type="button" id="addEducation" class="ghost-btn">+ Agregar educacion</button>
+              </div>
+              <div id="educationList"></div>
+            </section>
+          </details>
 
-          <section class="repeat-section">
-            <div class="repeat-head">
-              <h3>Chequeo ATS rapido</h3>
-            </div>
-            <label>
-              Keywords del aviso (separadas por coma)
-              <input
-                name="jobKeywords"
-                placeholder="SQL, ETL, dashboard, analisis, python"
-              />
-            </label>
-            <p id="atsHint" class="hint"></p>
-          </section>
+          <details class="form-collapsible" open>
+            <summary>Idiomas</summary>
+            <section class="repeat-section collapsible-content">
+              <div class="repeat-head">
+                <h3>Idiomas</h3>
+                <button type="button" id="addLanguage" class="ghost-btn">+ Agregar idioma</button>
+              </div>
+              <div id="languageList"></div>
+            </section>
+          </details>
 
-          <section class="controls">
-            <div class="field-grid one">
+          <details class="form-collapsible" open>
+            <summary>Chequeo ATS rapido</summary>
+            <section class="repeat-section collapsible-content">
               <label>
-                Tipografia del CV
-                <select name="fontPreset">
-                  <option value="manrope" selected>Manrope (moderna limpia)</option>
-                  <option value="montserrat">Montserrat (corporativa)</option>
-                  <option value="poppins">Poppins (redondeada actual)</option>
-                  <option value="sourceSans">Source Sans 3 (profesional)</option>
-                  <option value="nunito">Nunito (amigable)</option>
-                  <option value="firaSans">Fira Sans (tecnica clara)</option>
-                  <option value="merriweather">Merriweather (serif clasica)</option>
-                  <option value="lora">Lora (serif editorial)</option>
-                  <option value="robotoSlab">Roboto Slab (slab formal)</option>
-                  <option value="playfair">Playfair Display (elegante)</option>
-                </select>
+                Keywords del aviso (separadas por coma)
+                <input
+                  name="jobKeywords"
+                  placeholder="SQL, ETL, dashboard, analisis, python"
+                />
               </label>
-            </div>
+              <p id="atsHint" class="hint"></p>
+            </section>
+          </details>
 
-            <div class="layout-pick">
-              <p>Formato</p>
-              <label><input type="radio" name="layout" value="ats" checked /> ATS (1 columna)</label>
-              <label><input type="radio" name="layout" value="personal" /> Personal (2 columnas)</label>
-            </div>
+          <details class="form-collapsible" open>
+            <summary>Formato y exportacion</summary>
+            <section class="controls collapsible-content">
+              <div class="field-grid one">
+                <label>
+                  Tipografia del CV
+                  <select name="fontPreset">
+                    <option value="manrope" selected>Manrope (moderna limpia)</option>
+                    <option value="montserrat">Montserrat (corporativa)</option>
+                    <option value="poppins">Poppins (redondeada actual)</option>
+                    <option value="sourceSans">Source Sans 3 (profesional)</option>
+                    <option value="nunito">Nunito (amigable)</option>
+                    <option value="firaSans">Fira Sans (tecnica clara)</option>
+                    <option value="merriweather">Merriweather (serif clasica)</option>
+                    <option value="lora">Lora (serif editorial)</option>
+                    <option value="robotoSlab">Roboto Slab (slab formal)</option>
+                    <option value="playfair">Playfair Display (elegante)</option>
+                  </select>
+                </label>
+              </div>
 
-            <div class="action-row">
-              <button type="submit" class="primary-btn">Generar CV</button>
-              <button type="button" data-action="save-draft" class="ghost-btn">Guardar borrador</button>
-              <button type="button" data-action="download-html" class="ghost-btn">Descargar HTML</button>
-              <button type="button" data-action="print-pdf" class="ghost-btn">Imprimir / PDF</button>
-            </div>
-            <p id="saveStatus" class="save-status" aria-live="polite">Sin cambios guardados aun.</p>
-          </section>
+              <div class="layout-pick">
+                <p>Formato</p>
+                <label><input type="radio" name="layout" value="ats" checked /> ATS (1 columna)</label>
+                <label><input type="radio" name="layout" value="personal" /> Personal (2 columnas)</label>
+              </div>
+
+              <div class="action-row">
+                <button type="submit" class="primary-btn">Generar CV</button>
+                <button type="button" data-action="save-draft" class="ghost-btn">Guardar borrador</button>
+                <button type="button" data-action="download-html" class="ghost-btn">Descargar HTML</button>
+                <button type="button" data-action="print-pdf" class="ghost-btn">Imprimir / PDF</button>
+              </div>
+              <p id="saveStatus" class="save-status" aria-live="polite">Sin cambios guardados aun.</p>
+            </section>
+          </details>
         </form>
       </section>
 
