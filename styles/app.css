@@ -223,6 +223,11 @@ textarea {
   font: inherit;
 }
 
+input[type="checkbox"],
+input[type="radio"] {
+  accent-color: var(--brand);
+}
+
 textarea {
   resize: vertical;
 }

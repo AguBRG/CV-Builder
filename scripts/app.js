@@ -196,10 +196,7 @@ function enhanceOptionalLabel(label) {
   checkbox.checked = true;
   checkbox.dataset.optionalToggleFor = getOptionalToggleId(control);
 
-  const toggleText = document.createElement("span");
-  toggleText.textContent = "Incluir";
-
-  toggle.append(checkbox, toggleText);
+  toggle.append(checkbox);
   header.append(text, toggle);
   label.insertBefore(header, control);
   label.dataset.optionalEnhanced = "true";
