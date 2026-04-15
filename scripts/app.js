@@ -381,7 +381,8 @@ function createDefaultEducationOptionalFields() {
     institution: true,
     start: true,
     end: true,
-    inProgress: true
+    inProgress: true,
+    extraDetails: true
   };
 }
 
@@ -391,7 +392,8 @@ function createDefaultCourseOptionalFields() {
     institution: true,
     start: true,
     end: true,
-    inProgress: true
+    inProgress: true,
+    extraDetails: true
   };
 }
 
@@ -722,6 +724,7 @@ function getFormData() {
       start: getControlValue(item.querySelector('[data-field="start"]'), true),
       end: getControlValue(item.querySelector('[data-field="end"]'), true),
       inProgress: item.querySelector('[data-field="inProgress"]')?.checked || false,
+      extraDetails: getControlValue(item.querySelector('[data-field="extraDetails"]'), true),
       optionalFields: collectRepeatOptionalStates(item, createDefaultEducationOptionalFields())
     })),
     courses: collectRepeats(".course-item", (item) => ({
@@ -730,6 +733,7 @@ function getFormData() {
       start: getControlValue(item.querySelector('[data-field="start"]'), true),
       end: getControlValue(item.querySelector('[data-field="end"]'), true),
       inProgress: item.querySelector('[data-field="inProgress"]')?.checked || false,
+      extraDetails: getControlValue(item.querySelector('[data-field="extraDetails"]'), true),
       optionalFields: collectRepeatOptionalStates(item, createDefaultCourseOptionalFields())
     })),
     languages: collectRepeats(".language-item", (item) => ({
@@ -749,6 +753,10 @@ function escapeHtml(value = "") {
     .replaceAll(">", "&gt;")
     .replaceAll('"', "&quot;")
     .replaceAll("'", "&#39;");
+}
+
+function renderMultilineText(value = "") {
+  return escapeHtml(value).replaceAll("\n", "<br>");
 }
 
 function renderExperience(list) {
@@ -811,9 +819,13 @@ function renderEducation(list) {
       institution: getEnabledValue(edu, "institution"),
       start: getEnabledValue(edu, "start"),
       end: edu.inProgress ? "En curso" : getEnabledValue(edu, "end"),
-      inProgress: edu.inProgress
+      inProgress: edu.inProgress,
+      extraDetails: getEnabledValue(edu, "extraDetails")
     }))
-    .filter((edu) => edu.degree || edu.institution || edu.start || edu.end || edu.inProgress);
+    .filter(
+      (edu) =>
+        edu.degree || edu.institution || edu.start || edu.end || edu.inProgress || edu.extraDetails
+    );
 
   if (!visibleItems.length) {
     return "<p class=\"muted\">Agrega tu formación académica.</p>";
@@ -826,6 +838,9 @@ function renderEducation(list) {
         const institution = edu.institution
           ? `<p class="muted">${escapeHtml(edu.institution)}</p>`
           : "";
+        const extraDetails = edu.extraDetails
+          ? `<p class="muted">${renderMultilineText(edu.extraDetails)}</p>`
+          : "";
 
         return `
         <article class="edu-item">
@@ -834,6 +849,7 @@ function renderEducation(list) {
             <p class="muted">${escapeHtml(period)}</p>
           </div>
           ${institution}
+          ${extraDetails}
         </article>
       `;
       }
@@ -848,9 +864,18 @@ function renderCourses(list) {
       institution: getEnabledValue(course, "institution"),
       start: getEnabledValue(course, "start"),
       end: course.inProgress ? "En curso" : getEnabledValue(course, "end"),
-      inProgress: course.inProgress
+      inProgress: course.inProgress,
+      extraDetails: getEnabledValue(course, "extraDetails")
     }))
-    .filter((course) => course.degree || course.institution || course.start || course.end || course.inProgress);
+    .filter(
+      (course) =>
+        course.degree ||
+        course.institution ||
+        course.start ||
+        course.end ||
+        course.inProgress ||
+        course.extraDetails
+    );
 
   if (!visibleItems.length) {
     return "<p class=\"muted\">Agrega al menos un curso.</p>";
@@ -862,6 +887,9 @@ function renderCourses(list) {
       const institution = course.institution
         ? `<p class="muted">${escapeHtml(course.institution)}</p>`
         : "";
+      const extraDetails = course.extraDetails
+        ? `<p class="muted">${renderMultilineText(course.extraDetails)}</p>`
+        : "";
 
       return `
         <article class="edu-item">
@@ -870,6 +898,7 @@ function renderCourses(list) {
             <p class="muted">${escapeHtml(period)}</p>
           </div>
           ${institution}
+          ${extraDetails}
         </article>
       `;
     })
@@ -1166,7 +1195,8 @@ function getAllCvText(data) {
       getEnabledValue(edu, "degree"),
       getEnabledValue(edu, "institution"),
       getEnabledValue(edu, "start"),
-      edu.inProgress ? "en curso" : getEnabledValue(edu, "end")
+      edu.inProgress ? "en curso" : getEnabledValue(edu, "end"),
+      getEnabledValue(edu, "extraDetails")
     ])
     .join(" ")
     : "";
@@ -1177,7 +1207,8 @@ function getAllCvText(data) {
       getEnabledValue(course, "degree"),
       getEnabledValue(course, "institution"),
       getEnabledValue(course, "start"),
-      course.inProgress ? "en curso" : getEnabledValue(course, "end")
+      course.inProgress ? "en curso" : getEnabledValue(course, "end"),
+      getEnabledValue(course, "extraDetails")
     ])
     .join(" ")
     : "";
@@ -1333,6 +1364,7 @@ function loadDraft() {
     setRepeatValue(card, "institution", edu.institution);
     setRepeatValue(card, "start", edu.start);
     setRepeatValue(card, "end", edu.end);
+    setRepeatValue(card, "extraDetails", edu.extraDetails);
     const inProgressCheckbox = card.querySelector('[data-field="inProgress"]');
     if (inProgressCheckbox) {
       inProgressCheckbox.checked = Boolean(edu.inProgress);
@@ -1354,6 +1386,7 @@ function loadDraft() {
     setRepeatValue(card, "institution", course.institution);
     setRepeatValue(card, "start", course.start);
     setRepeatValue(card, "end", course.end);
+    setRepeatValue(card, "extraDetails", course.extraDetails);
     const inProgressCheckbox = card.querySelector('[data-field="inProgress"]');
     if (inProgressCheckbox) {
       inProgressCheckbox.checked = Boolean(course.inProgress);
