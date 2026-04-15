@@ -1417,9 +1417,7 @@ function bindNoSectionToggle({
     addButton.disabled = noSection;
     listEl.style.display = noSection ? "none" : "block";
 
-    if (noSection) {
-      listEl.innerHTML = "";
-    } else if (!listEl.children.length) {
+    if (!noSection && !listEl.children.length) {
       createItem();
     }
 
