@@ -13,7 +13,62 @@ const educationTemplate = document.querySelector("#educationTemplate");
 const languageTemplate = document.querySelector("#languageTemplate");
 
 const STORAGE_KEY = "cv_builder_draft_v1";
+const FONT_PRESETS = {
+  manrope: {
+    label: "Manrope",
+    stack: '"Manrope", "Segoe UI", sans-serif'
+  },
+  montserrat: {
+    label: "Montserrat",
+    stack: '"Montserrat", "Segoe UI", sans-serif'
+  },
+  poppins: {
+    label: "Poppins",
+    stack: '"Poppins", "Segoe UI", sans-serif'
+  },
+  sourceSans: {
+    label: "Source Sans 3",
+    stack: '"Source Sans 3", "Segoe UI", sans-serif'
+  },
+  nunito: {
+    label: "Nunito",
+    stack: '"Nunito", "Segoe UI", sans-serif'
+  },
+  firaSans: {
+    label: "Fira Sans",
+    stack: '"Fira Sans", "Segoe UI", sans-serif'
+  },
+  merriweather: {
+    label: "Merriweather",
+    stack: '"Merriweather", Georgia, serif'
+  },
+  lora: {
+    label: "Lora",
+    stack: '"Lora", Georgia, serif'
+  },
+  robotoSlab: {
+    label: "Roboto Slab",
+    stack: '"Roboto Slab", Georgia, serif'
+  },
+  playfair: {
+    label: "Playfair Display",
+    stack: '"Playfair Display", Georgia, serif'
+  }
+};
+const DEFAULT_FONT_PRESET = "manrope";
 let autoSaveTimer = null;
+
+function getFontPreset(preset) {
+  return FONT_PRESETS[preset] ? preset : DEFAULT_FONT_PRESET;
+}
+
+function getFontStack(preset) {
+  return FONT_PRESETS[getFontPreset(preset)].stack;
+}
+
+function getFontLabel(preset) {
+  return FONT_PRESETS[getFontPreset(preset)].label;
+}
 
 function markSaveStatus(text, isSaved = false) {
   if (!saveStatus) {
@@ -85,6 +140,7 @@ function getFormData() {
     skills: splitCommaList(getFieldValue("skills")),
     jobKeywords: splitCommaList(getFieldValue("jobKeywords")),
     layout: form.elements.layout.value,
+    fontPreset: getFontPreset(form.elements.fontPreset?.value),
     experiences: collectRepeats(".experience-item", (item) => ({
       role: item.querySelector('[data-field="role"]').value.trim(),
       company: item.querySelector('[data-field="company"]').value.trim(),
@@ -265,9 +321,13 @@ function renderPersonalCv(data) {
 
 function renderCv(data) {
   const isAts = data.layout === "ats";
+  const fontPreset = getFontPreset(data.fontPreset);
   preview.classList.toggle("cv-ats", isAts);
   preview.classList.toggle("cv-personal", !isAts);
-  previewMeta.textContent = `Formato actual: ${isAts ? "ATS" : "Personal"}`;
+  preview.style.setProperty("--cv-font-family", getFontStack(fontPreset));
+  previewMeta.textContent = `Formato actual: ${isAts ? "ATS" : "Personal"} | Tipografia: ${getFontLabel(
+    fontPreset
+  )}`;
 
   preview.innerHTML = isAts ? renderAtsCv(data) : renderPersonalCv(data);
 }
@@ -365,6 +425,7 @@ function loadDraft() {
 
   form.elements.skills.value = (data.skills || []).join(", ");
   form.elements.layout.value = data.layout || "ats";
+  form.elements.fontPreset.value = getFontPreset(data.fontPreset);
 
   experienceList.innerHTML = "";
   educationList.innerHTML = "";
@@ -411,6 +472,7 @@ function buildStandaloneHtml(data) {
     .join("\n");
 
   const bodyClass = data.layout === "ats" ? "cv-template cv-ats" : "cv-template cv-personal";
+  const fontStack = getFontStack(data.fontPreset);
 
   return `<!doctype html>
 <html lang="es">
@@ -419,7 +481,7 @@ function buildStandaloneHtml(data) {
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>CV ${escapeHtml(data.basics.fullName || "export")}</title>
   ${css}
-  <style>body{margin:16px;background:#fff}.cv-template{max-width:900px;margin:0 auto}</style>
+  <style>body{margin:16px;background:#fff}.cv-template{max-width:900px;margin:0 auto;--cv-font-family:${fontStack}}</style>
 </head>
 <body>
   <article class="${bodyClass}">

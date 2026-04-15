@@ -5,6 +5,7 @@
   padding: 22px;
   min-height: 360px;
   color: #17120d;
+  font-family: var(--cv-font-family, Manrope, "Segoe UI", sans-serif);
 }
 
 .cv-template h1,
@@ -20,7 +21,8 @@
 }
 
 .cv-template .cv-header h1 {
-  font-family: Fraunces, Georgia, serif;
+  font-family: inherit;
+  font-weight: 800;
   font-size: 1.7rem;
   margin-bottom: 6px;
 }
