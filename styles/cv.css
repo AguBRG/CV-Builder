@@ -41,6 +41,13 @@
   font-size: 0.92rem;
 }
 
+.cv-template a {
+  color: inherit;
+  text-decoration: underline;
+  text-decoration-color: rgba(90, 83, 72, 0.45);
+  text-underline-offset: 2px;
+}
+
 .cv-template section {
   margin-top: 14px;
 }

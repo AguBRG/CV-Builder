@@ -228,16 +228,54 @@ function renderLanguages(list) {
     .join("");
 }
 
+function normalizeLinkedinUrl(value) {
+  const trimmed = value.trim();
+
+  if (!trimmed) {
+    return "";
+  }
+
+  if (/^https?:\/\//i.test(trimmed)) {
+    return trimmed;
+  }
+
+  return `https://${trimmed}`;
+}
+
+function renderContactValue(type, value) {
+  const safeValue = escapeHtml(value);
+
+  if (type === "email") {
+    return `<a href="mailto:${safeValue}">${safeValue}</a>`;
+  }
+
+  if (type === "phone") {
+    const phoneHref = value.replace(/[^\d+]/g, "");
+    return phoneHref ? `<a href="tel:${escapeHtml(phoneHref)}">${safeValue}</a>` : safeValue;
+  }
+
+  if (type === "linkedin") {
+    const linkedinUrl = normalizeLinkedinUrl(value);
+    return `<a href="${escapeHtml(linkedinUrl)}" target="_blank" rel="noreferrer noopener">${safeValue}</a>`;
+  }
+
+  return safeValue;
+}
+
 function renderContactLines(basics, includeLinkedin = true) {
-  const contactLines = [basics.city, basics.email, basics.phone];
+  const contactLines = [
+    { type: "text", value: basics.city },
+    { type: "email", value: basics.email },
+    { type: "phone", value: basics.phone }
+  ];
 
   if (includeLinkedin) {
-    contactLines.push(basics.linkedin);
+    contactLines.push({ type: "linkedin", value: basics.linkedin });
   }
 
   return contactLines
-    .filter(Boolean)
-    .map((item) => `<p class="meta">${escapeHtml(item)}</p>`)
+    .filter((item) => item.value)
+    .map((item) => `<p class="meta">${renderContactValue(item.type, item.value)}</p>`)
     .join("");
 }
 
