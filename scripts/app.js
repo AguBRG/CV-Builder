@@ -6,10 +6,12 @@ const saveStatus = document.querySelector("#saveStatus");
 
 const experienceList = document.querySelector("#experienceList");
 const educationList = document.querySelector("#educationList");
+const courseList = document.querySelector("#courseList");
 const languageList = document.querySelector("#languageList");
 
 const experienceTemplate = document.querySelector("#experienceTemplate");
 const educationTemplate = document.querySelector("#educationTemplate");
+const courseTemplate = document.querySelector("#courseTemplate");
 const languageTemplate = document.querySelector("#languageTemplate");
 
 const STORAGE_KEY = "cv_builder_draft_v1";
@@ -87,6 +89,16 @@ function createDefaultExperienceOptionalFields() {
 }
 
 function createDefaultEducationOptionalFields() {
+  return {
+    degree: true,
+    institution: true,
+    start: true,
+    end: true,
+    inProgress: true
+  };
+}
+
+function createDefaultCourseOptionalFields() {
   return {
     degree: true,
     institution: true,
@@ -273,7 +285,7 @@ function collectRepeatOptionalStates(item, defaults) {
   );
 }
 
-function updateEducationInProgressState(card) {
+function updateInProgressState(card) {
   const inProgressCheckbox = card.querySelector('[data-field="inProgress"]');
   const endInput = card.querySelector('[data-field="end"]');
 
@@ -298,8 +310,8 @@ function updateEducationInProgressState(card) {
   }
 }
 
-function bindEducationInProgressToggle(card) {
-  if (!card.classList.contains("education-item")) {
+function bindInProgressToggle(card) {
+  if (!card.classList.contains("education-item") && !card.classList.contains("course-item")) {
     return;
   }
 
@@ -309,18 +321,18 @@ function bindEducationInProgressToggle(card) {
   }
 
   inProgressCheckbox.addEventListener("change", () => {
-    updateEducationInProgressState(card);
+    updateInProgressState(card);
     runAtsHint();
     scheduleAutoSave();
   });
 
-  updateEducationInProgressState(card);
+  updateInProgressState(card);
 }
 
 function createRepeatItem(template, listEl) {
   const clone = template.content.firstElementChild.cloneNode(true);
   enhanceOptionalFields(clone);
-  bindEducationInProgressToggle(clone);
+  bindInProgressToggle(clone);
 
   clone.querySelector(".remove-btn").addEventListener("click", () => {
     clone.remove();
@@ -393,6 +405,14 @@ function getFormData() {
       end: getControlValue(item.querySelector('[data-field="end"]'), true),
       inProgress: item.querySelector('[data-field="inProgress"]')?.checked || false,
       optionalFields: collectRepeatOptionalStates(item, createDefaultEducationOptionalFields())
+    })),
+    courses: collectRepeats(".course-item", (item) => ({
+      degree: getControlValue(item.querySelector('[data-field="degree"]'), true),
+      institution: getControlValue(item.querySelector('[data-field="institution"]'), true),
+      start: getControlValue(item.querySelector('[data-field="start"]'), true),
+      end: getControlValue(item.querySelector('[data-field="end"]'), true),
+      inProgress: item.querySelector('[data-field="inProgress"]')?.checked || false,
+      optionalFields: collectRepeatOptionalStates(item, createDefaultCourseOptionalFields())
     })),
     languages: collectRepeats(".language-item", (item) => ({
       name: getControlValue(item.querySelector('[data-field="name"]'), true),
@@ -500,6 +520,41 @@ function renderEducation(list) {
       `;
       }
     )
+    .join("");
+}
+
+function renderCourses(list) {
+  const visibleItems = list
+    .map((course) => ({
+      degree: getEnabledValue(course, "degree"),
+      institution: getEnabledValue(course, "institution"),
+      start: getEnabledValue(course, "start"),
+      end: course.inProgress ? "En curso" : getEnabledValue(course, "end"),
+      inProgress: course.inProgress
+    }))
+    .filter((course) => course.degree || course.institution || course.start || course.end || course.inProgress);
+
+  if (!visibleItems.length) {
+    return "<p class=\"muted\">Agrega al menos un curso.</p>";
+  }
+
+  return visibleItems
+    .map((course) => {
+      const period = [course.start, course.end].filter(Boolean).join(" - ");
+      const institution = course.institution
+        ? `<p class="muted">${escapeHtml(course.institution)}</p>`
+        : "";
+
+      return `
+        <article class="edu-item">
+          <div class="title-row">
+            <h3>${escapeHtml(course.degree || "Curso")}</h3>
+            <p class="muted">${escapeHtml(period)}</p>
+          </div>
+          ${institution}
+        </article>
+      `;
+    })
     .join("");
 }
 
@@ -626,6 +681,11 @@ function renderAtsCv(data) {
         ${renderEducation(data.education)}
       </section>
 
+      <section>
+        <h2>Cursos</h2>
+        ${renderCourses(data.courses)}
+      </section>
+
       ${skillsSection}
 
       ${notesSection}
@@ -694,6 +754,11 @@ function renderPersonalCv(data) {
           <h2>Educación</h2>
           ${renderEducation(data.education)}
         </section>
+
+        <section>
+          <h2>Cursos</h2>
+          ${renderCourses(data.courses)}
+        </section>
       </aside>
 
       <section>
@@ -745,6 +810,15 @@ function getAllCvText(data) {
     ])
     .join(" ");
 
+  const courseText = data.courses
+    .flatMap((course) => [
+      getEnabledValue(course, "degree"),
+      getEnabledValue(course, "institution"),
+      getEnabledValue(course, "start"),
+      course.inProgress ? "en curso" : getEnabledValue(course, "end")
+    ])
+    .join(" ");
+
   const languageText = data.languages
     .flatMap((lang) => [getEnabledValue(lang, "name"), getEnabledValue(lang, "level")])
     .join(" ");
@@ -762,6 +836,7 @@ function getAllCvText(data) {
     getOptionalValue(data.optionalFields, "notes", data.notes),
     experienceText,
     educationText,
+    courseText,
     languageText
   ]
     .join(" ")
@@ -851,6 +926,7 @@ function loadDraft() {
 
   experienceList.innerHTML = "";
   educationList.innerHTML = "";
+  courseList.innerHTML = "";
   languageList.innerHTML = "";
 
   (data.experiences?.length ? data.experiences : [{}]).forEach((exp) => {
@@ -881,10 +957,31 @@ function loadDraft() {
     const inProgressCheckbox = card.querySelector('[data-field="inProgress"]');
     if (inProgressCheckbox) {
       inProgressCheckbox.checked = Boolean(edu.inProgress);
-      updateEducationInProgressState(card);
+      updateInProgressState(card);
     }
 
     const optionalFields = { ...createDefaultEducationOptionalFields(), ...(edu.optionalFields || {}) };
+    Object.entries(optionalFields).forEach(([field, enabled]) => {
+      const control = card.querySelector(`[data-field="${field}"]`);
+      if (control) {
+        setControlOptionalState(control, enabled);
+      }
+    });
+  });
+
+  (data.courses?.length ? data.courses : [{}]).forEach((course) => {
+    const card = createRepeatItem(courseTemplate, courseList);
+    setRepeatValue(card, "degree", course.degree);
+    setRepeatValue(card, "institution", course.institution);
+    setRepeatValue(card, "start", course.start);
+    setRepeatValue(card, "end", course.end);
+    const inProgressCheckbox = card.querySelector('[data-field="inProgress"]');
+    if (inProgressCheckbox) {
+      inProgressCheckbox.checked = Boolean(course.inProgress);
+      updateInProgressState(card);
+    }
+
+    const optionalFields = { ...createDefaultCourseOptionalFields(), ...(course.optionalFields || {}) };
     Object.entries(optionalFields).forEach(([field, enabled]) => {
       const control = card.querySelector(`[data-field="${field}"]`);
       if (control) {
@@ -914,6 +1011,7 @@ function loadDraft() {
 function addDefaultItems() {
   createRepeatItem(experienceTemplate, experienceList);
   createRepeatItem(educationTemplate, educationList);
+  createRepeatItem(courseTemplate, courseList);
   createRepeatItem(languageTemplate, languageList);
 }
 
@@ -966,6 +1064,11 @@ document.querySelector("#addExperience").addEventListener("click", () => {
 
 document.querySelector("#addEducation").addEventListener("click", () => {
   createRepeatItem(educationTemplate, educationList);
+  scheduleAutoSave();
+});
+
+document.querySelector("#addCourse").addEventListener("click", () => {
+  createRepeatItem(courseTemplate, courseList);
   scheduleAutoSave();
 });
 

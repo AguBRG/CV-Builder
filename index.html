@@ -141,6 +141,17 @@
           </details>
 
           <details class="form-collapsible" open>
+            <summary>Cursos</summary>
+            <section class="repeat-section collapsible-content">
+              <div class="repeat-head">
+                <h3>Cursos</h3>
+                <button type="button" id="addCourse" class="ghost-btn">+ Agregar curso</button>
+              </div>
+              <div id="courseList"></div>
+            </section>
+          </details>
+
+          <details class="form-collapsible" open>
             <summary>Idiomas</summary>
             <section class="repeat-section collapsible-content">
               <div class="repeat-head">
@@ -253,6 +264,27 @@
         <div class="field-grid two">
           <label>Inicio<input data-field="start" placeholder="2018" /></label>
           <label>Fin<input data-field="end" placeholder="2022" /></label>
+        </div>
+        <label class="inline-check">
+          <input type="checkbox" data-field="inProgress" />
+          En curso
+        </label>
+      </article>
+    </template>
+
+    <template id="courseTemplate">
+      <article class="repeat-card course-item">
+        <div class="repeat-top">
+          <h4>Curso</h4>
+          <button type="button" class="remove-btn">Quitar</button>
+        </div>
+        <div class="field-grid two">
+          <label>Curso<input data-field="degree" required /></label>
+          <label>Institución<input data-field="institution" required /></label>
+        </div>
+        <div class="field-grid two">
+          <label>Inicio<input data-field="start" placeholder="2024" /></label>
+          <label>Fin<input data-field="end" placeholder="2025" /></label>
         </div>
         <label class="inline-check">
           <input type="checkbox" data-field="inProgress" />
