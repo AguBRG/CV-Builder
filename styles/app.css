@@ -169,6 +169,37 @@ label {
   color: var(--muted);
 }
 
+.field-label-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+}
+
+.field-include-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.78rem;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.field-include-toggle input {
+  width: auto;
+  margin: 0;
+}
+
+.field-is-off {
+  opacity: 0.68;
+}
+
+.field-is-off input,
+.field-is-off select,
+.field-is-off textarea {
+  background: #f4efe7;
+}
+
 input,
 select,
 textarea {

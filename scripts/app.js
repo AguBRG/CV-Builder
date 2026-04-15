@@ -58,6 +58,60 @@ const FONT_PRESETS = {
 const DEFAULT_FONT_PRESET = "manrope";
 let autoSaveTimer = null;
 
+function createDefaultOptionalFields() {
+  return {
+    fullName: true,
+    headline: true,
+    city: true,
+    email: true,
+    phone: true,
+    linkedin: true,
+    summary: true,
+    skills: true,
+    jobKeywords: true
+  };
+}
+
+function createDefaultExperienceOptionalFields() {
+  return {
+    role: true,
+    company: true,
+    location: true,
+    start: true,
+    end: true,
+    referenceContact: true,
+    bullets: true
+  };
+}
+
+function createDefaultEducationOptionalFields() {
+  return {
+    degree: true,
+    institution: true,
+    start: true,
+    end: true
+  };
+}
+
+function createDefaultLanguageOptionalFields() {
+  return {
+    name: true,
+    level: true
+  };
+}
+
+function isFieldEnabled(optionalFields, field) {
+  return optionalFields?.[field] !== false;
+}
+
+function getEnabledValue(record, field) {
+  return isFieldEnabled(record.optionalFields, field) ? record[field] || "" : "";
+}
+
+function getOptionalValue(optionalFields, field, value) {
+  return isFieldEnabled(optionalFields, field) ? value || "" : "";
+}
+
 function getFontPreset(preset) {
   return FONT_PRESETS[preset] ? preset : DEFAULT_FONT_PRESET;
 }
@@ -91,8 +145,128 @@ function scheduleAutoSave() {
   }, 350);
 }
 
+function getOptionalToggleId(control) {
+  if (control.name) {
+    return `name:${control.name}`;
+  }
+
+  return `data:${control.dataset.field}`;
+}
+
+function setControlEnabledState(control, enabled) {
+  control.dataset.enabled = enabled ? "true" : "false";
+  control.disabled = !enabled;
+  control.closest("label")?.classList.toggle("field-is-off", !enabled);
+}
+
+function enhanceOptionalLabel(label) {
+  if (!label || label.dataset.optionalEnhanced === "true") {
+    return;
+  }
+
+  const control = label.querySelector("input, textarea, select");
+
+  if (!control || control.type === "radio" || control.type === "checkbox") {
+    return;
+  }
+
+  const nodesBeforeControl = [];
+  let currentNode = label.firstChild;
+
+  while (currentNode && currentNode !== control) {
+    const nextNode = currentNode.nextSibling;
+    nodesBeforeControl.push(currentNode);
+    currentNode = nextNode;
+  }
+
+  const header = document.createElement("span");
+  header.className = "field-label-head";
+
+  const text = document.createElement("span");
+  text.className = "field-label-text";
+  nodesBeforeControl.forEach((node) => text.appendChild(node));
+
+  const toggle = document.createElement("span");
+  toggle.className = "field-include-toggle";
+
+  const checkbox = document.createElement("input");
+  checkbox.type = "checkbox";
+  checkbox.checked = true;
+  checkbox.dataset.optionalToggleFor = getOptionalToggleId(control);
+
+  const toggleText = document.createElement("span");
+  toggleText.textContent = "Incluir";
+
+  toggle.append(checkbox, toggleText);
+  header.append(text, toggle);
+  label.insertBefore(header, control);
+  label.dataset.optionalEnhanced = "true";
+
+  checkbox.addEventListener("change", () => {
+    setControlEnabledState(control, checkbox.checked);
+    runAtsHint();
+    scheduleAutoSave();
+  });
+
+  setControlEnabledState(control, true);
+}
+
+function enhanceOptionalFields(root = document) {
+  root.querySelectorAll("label").forEach((label) => {
+    enhanceOptionalLabel(label);
+  });
+}
+
+function setControlOptionalState(control, enabled) {
+  const toggleId = getOptionalToggleId(control);
+  const checkbox = control
+    .closest("label")
+    ?.querySelector(`[data-optional-toggle-for="${toggleId}"]`);
+
+  if (checkbox) {
+    checkbox.checked = enabled;
+  }
+
+  setControlEnabledState(control, enabled);
+}
+
+function getControlValue(control, includeDisabled = false) {
+  if (!control) {
+    return "";
+  }
+
+  if (!includeDisabled && control.dataset.enabled === "false") {
+    return "";
+  }
+
+  return control.value.trim();
+}
+
+function getNamedFieldOptionalStates() {
+  const defaults = createDefaultOptionalFields();
+
+  Object.keys(defaults).forEach((field) => {
+    const control = form.elements[field];
+    if (control) {
+      defaults[field] = control.dataset.enabled !== "false";
+    }
+  });
+
+  return defaults;
+}
+
+function collectRepeatOptionalStates(item, defaults) {
+  return Object.fromEntries(
+    Object.keys(defaults).map((field) => {
+      const control = item.querySelector(`[data-field="${field}"]`);
+      return [field, control ? control.dataset.enabled !== "false" : true];
+    })
+  );
+}
+
 function createRepeatItem(template, listEl) {
   const clone = template.content.firstElementChild.cloneNode(true);
+  enhanceOptionalFields(clone);
 
   clone.querySelector(".remove-btn").addEventListener("click", () => {
     clone.remove();
@@ -105,7 +279,11 @@ function createRepeatItem(template, listEl) {
 }
 
 function getFieldValue(name) {
-  return (form.elements[name]?.value || "").trim();
+  return getControlValue(form.elements[name]);
+}
+
+function getRawFieldValue(name) {
+  return getControlValue(form.elements[name], true);
 }
 
 function splitCommaList(text) {
@@ -129,35 +307,40 @@ function collectRepeats(selector, mapper) {
 function getFormData() {
   const data = {
     basics: {
-      fullName: getFieldValue("fullName"),
-      headline: getFieldValue("headline"),
-      city: getFieldValue("city"),
-      email: getFieldValue("email"),
-      phone: getFieldValue("phone"),
-      linkedin: getFieldValue("linkedin")
+      fullName: getRawFieldValue("fullName"),
+      headline: getRawFieldValue("headline"),
+      city: getRawFieldValue("city"),
+      email: getRawFieldValue("email"),
+      phone: getRawFieldValue("phone"),
+      linkedin: getRawFieldValue("linkedin")
     },
-    summary: getFieldValue("summary"),
-    skills: splitCommaList(getFieldValue("skills")),
-    jobKeywords: splitCommaList(getFieldValue("jobKeywords")),
+    summary: getRawFieldValue("summary"),
+    skills: splitCommaList(getRawFieldValue("skills")),
+    jobKeywords: splitCommaList(getRawFieldValue("jobKeywords")),
     layout: form.elements.layout.value,
     fontPreset: getFontPreset(form.elements.fontPreset?.value),
+    optionalFields: getNamedFieldOptionalStates(),
     experiences: collectRepeats(".experience-item", (item) => ({
-      role: item.querySelector('[data-field="role"]').value.trim(),
-      company: item.querySelector('[data-field="company"]').value.trim(),
-      location: item.querySelector('[data-field="location"]').value.trim(),
-      start: item.querySelector('[data-field="start"]').value.trim(),
-      end: item.querySelector('[data-field="end"]').value.trim(),
-      bullets: splitLines(item.querySelector('[data-field="bullets"]').value)
+      role: getControlValue(item.querySelector('[data-field="role"]'), true),
+      company: getControlValue(item.querySelector('[data-field="company"]'), true),
+      location: getControlValue(item.querySelector('[data-field="location"]'), true),
+      start: getControlValue(item.querySelector('[data-field="start"]'), true),
+      end: getControlValue(item.querySelector('[data-field="end"]'), true),
+      referenceContact: getControlValue(item.querySelector('[data-field="referenceContact"]'), true),
+      bullets: splitLines(getControlValue(item.querySelector('[data-field="bullets"]'), true)),
+      optionalFields: collectRepeatOptionalStates(item, createDefaultExperienceOptionalFields())
     })),
     education: collectRepeats(".education-item", (item) => ({
-      degree: item.querySelector('[data-field="degree"]').value.trim(),
-      institution: item.querySelector('[data-field="institution"]').value.trim(),
-      start: item.querySelector('[data-field="start"]').value.trim(),
-      end: item.querySelector('[data-field="end"]').value.trim()
+      degree: getControlValue(item.querySelector('[data-field="degree"]'), true),
+      institution: getControlValue(item.querySelector('[data-field="institution"]'), true),
+      start: getControlValue(item.querySelector('[data-field="start"]'), true),
+      end: getControlValue(item.querySelector('[data-field="end"]'), true),
+      optionalFields: collectRepeatOptionalStates(item, createDefaultEducationOptionalFields())
     })),
     languages: collectRepeats(".language-item", (item) => ({
-      name: item.querySelector('[data-field="name"]').value.trim(),
-      level: item.querySelector('[data-field="level"]').value.trim()
+      name: getControlValue(item.querySelector('[data-field="name"]'), true),
+      level: getControlValue(item.querySelector('[data-field="level"]'), true),
+      optionalFields: collectRepeatOptionalStates(item, createDefaultLanguageOptionalFields())
     }))
   };
 
@@ -174,23 +357,51 @@ function escapeHtml(value = "") {
 }
 
 function renderExperience(list) {
-  if (!list.length) {
+  const visibleItems = list
+    .map((exp) => ({
+      role: getEnabledValue(exp, "role"),
+      company: getEnabledValue(exp, "company"),
+      location: getEnabledValue(exp, "location"),
+      start: getEnabledValue(exp, "start"),
+      end: getEnabledValue(exp, "end"),
+      referenceContact: getEnabledValue(exp, "referenceContact"),
+      bullets: isFieldEnabled(exp.optionalFields, "bullets") ? exp.bullets : []
+    }))
+    .filter(
+      (exp) =>
+        exp.role ||
+        exp.company ||
+        exp.location ||
+        exp.start ||
+        exp.end ||
+        exp.referenceContact ||
+        exp.bullets.length
+    );
+
+  if (!visibleItems.length) {
     return "<p class=\"muted\">Completa al menos una experiencia.</p>";
   }
 
-  return list
+  return visibleItems
     .map((exp) => {
       const bullets = exp.bullets.length
         ? `<ul>${exp.bullets.map((b) => `<li>${escapeHtml(b)}</li>`).join("")}</ul>`
+        : "";
+      const title = [exp.role, exp.company].filter(Boolean).join(" - ");
+      const period = [exp.start, exp.end].filter(Boolean).join(" - ");
+      const location = exp.location ? `<p class="muted">${escapeHtml(exp.location)}</p>` : "";
+      const reference = exp.referenceContact
+        ? `<p class="muted exp-reference"><strong>Referencia:</strong> ${escapeHtml(exp.referenceContact)}</p>`
         : "";
 
       return `
         <article class="exp-item">
           <div class="title-row">
-            <h3>${escapeHtml(exp.role)} - ${escapeHtml(exp.company)}</h3>
-            <p class="muted">${escapeHtml(exp.start)} - ${escapeHtml(exp.end)}</p>
+            <h3>${escapeHtml(title || "Experiencia")}</h3>
+            <p class="muted">${escapeHtml(period)}</p>
           </div>
-          <p class="muted">${escapeHtml(exp.location)}</p>
+          ${location}
+          ${reference}
           ${bullets}
         </article>
       `;
@@ -199,32 +410,55 @@ function renderExperience(list) {
 }
 
 function renderEducation(list) {
-  if (!list.length) {
+  const visibleItems = list
+    .map((edu) => ({
+      degree: getEnabledValue(edu, "degree"),
+      institution: getEnabledValue(edu, "institution"),
+      start: getEnabledValue(edu, "start"),
+      end: getEnabledValue(edu, "end")
+    }))
+    .filter((edu) => edu.degree || edu.institution || edu.start || edu.end);
+
+  if (!visibleItems.length) {
     return "<p class=\"muted\">Agrega tu formación académica.</p>";
   }
 
-  return list
+  return visibleItems
     .map(
-      (edu) => `
+      (edu) => {
+        const period = [edu.start, edu.end].filter(Boolean).join(" - ");
+        const institution = edu.institution
+          ? `<p class="muted">${escapeHtml(edu.institution)}</p>`
+          : "";
+
+        return `
         <article class="edu-item">
           <div class="title-row">
-            <h3>${escapeHtml(edu.degree)}</h3>
-            <p class="muted">${escapeHtml(edu.start)} - ${escapeHtml(edu.end)}</p>
+            <h3>${escapeHtml(edu.degree || "Formación")}</h3>
+            <p class="muted">${escapeHtml(period)}</p>
           </div>
-          <p class="muted">${escapeHtml(edu.institution)}</p>
+          ${institution}
         </article>
-      `
+      `;
+      }
     )
     .join("");
 }
 
 function renderLanguages(list) {
-  if (!list.length) {
+  const visibleItems = list
+    .map((lang) => ({
+      name: getEnabledValue(lang, "name"),
+      level: getEnabledValue(lang, "level")
+    }))
+    .filter((lang) => lang.name || lang.level);
+
+  if (!visibleItems.length) {
     return "<p class=\"muted\">Sin idiomas cargados.</p>";
   }
 
-  return list
-    .map((lang) => `<li>${escapeHtml(lang.name)} - ${escapeHtml(lang.level)}</li>`)
+  return visibleItems
+    .map((lang) => `<li>${escapeHtml([lang.name, lang.level].filter(Boolean).join(" - "))}</li>`)
     .join("");
 }
 
@@ -264,13 +498,13 @@ function renderContactValue(type, value) {
 
 function renderContactLines(basics, includeLinkedin = true) {
   const contactLines = [
-    { type: "text", value: basics.city },
-    { type: "email", value: basics.email },
-    { type: "phone", value: basics.phone }
+    { type: "text", value: getEnabledValue(basics, "city") },
+    { type: "email", value: getEnabledValue(basics, "email") },
+    { type: "phone", value: getEnabledValue(basics, "phone") }
   ];
 
   if (includeLinkedin) {
-    contactLines.push({ type: "linkedin", value: basics.linkedin });
+    contactLines.push({ type: "linkedin", value: getEnabledValue(basics, "linkedin") });
   }
 
   return contactLines
@@ -280,18 +514,35 @@ function renderContactLines(basics, includeLinkedin = true) {
 }
 
 function renderAtsCv(data) {
+  const fullName = getOptionalValue(data.optionalFields, "fullName", data.basics.fullName) || "Tu nombre";
+  const headline = getOptionalValue(data.optionalFields, "headline", data.basics.headline);
+  const summary = getOptionalValue(data.optionalFields, "summary", data.summary);
+  const skills = getOptionalValue(data.optionalFields, "skills", data.skills.join(", "));
+  const summarySection = isFieldEnabled(data.optionalFields, "summary")
+    ? `<section>
+        <h2>Resumen profesional</h2>
+        <p>${escapeHtml(summary || "Describe tu experiencia y logros clave.")}</p>
+      </section>`
+    : "";
+  const skillsSection = isFieldEnabled(data.optionalFields, "skills")
+    ? `<section>
+        <h2>Habilidades</h2>
+        <p>${escapeHtml(skills || "SQL, Power BI, Excel, Python")}</p>
+      </section>`
+    : "";
+  const headlineMarkup = headline
+    ? `<p class="headline">${escapeHtml(headline)}</p>`
+    : "";
+
   return `
     <header class="cv-header">
-      <h1>${escapeHtml(data.basics.fullName || "Tu nombre")}</h1>
-      <p class="headline">${escapeHtml(data.basics.headline || "Tu titular profesional")}</p>
-      ${renderContactLines(data.basics)}
+      <h1>${escapeHtml(fullName)}</h1>
+      ${headlineMarkup}
+      ${renderContactLines({ ...data.basics, optionalFields: data.optionalFields })}
     </header>
 
     <section class="cv-body">
-      <section>
-        <h2>Resumen profesional</h2>
-        <p>${escapeHtml(data.summary || "Describe tu experiencia y logros clave.")}</p>
-      </section>
+      ${summarySection}
 
       <section>
         <h2>Experiencia</h2>
@@ -303,10 +554,7 @@ function renderAtsCv(data) {
         ${renderEducation(data.education)}
       </section>
 
-      <section>
-        <h2>Habilidades</h2>
-        <p>${escapeHtml(data.skills.join(", ") || "SQL, Power BI, Excel, Python")}</p>
-      </section>
+      ${skillsSection}
 
       <section>
         <h2>Idiomas</h2>
@@ -317,23 +565,44 @@ function renderAtsCv(data) {
 }
 
 function renderPersonalCv(data) {
+  const fullName = getOptionalValue(data.optionalFields, "fullName", data.basics.fullName) || "Tu nombre";
+  const headline = getOptionalValue(data.optionalFields, "headline", data.basics.headline);
+  const summary = getOptionalValue(data.optionalFields, "summary", data.summary);
+  const visibleSkills = isFieldEnabled(data.optionalFields, "skills")
+    ? data.skills.length
+      ? data.skills
+      : ["Agrega habilidades"]
+    : [];
+  const headlineMarkup = headline
+    ? `<p class="headline">${escapeHtml(headline)}</p>`
+    : "";
+  const skillsSection = isFieldEnabled(data.optionalFields, "skills")
+    ? `<section>
+          <h2>Habilidades</h2>
+          <div class="pill-list">
+            ${visibleSkills.map(
+              (skill) => `<span class="pill">${escapeHtml(skill)}</span>`
+            ).join("")}
+          </div>
+        </section>`
+    : "";
+  const summarySection = isFieldEnabled(data.optionalFields, "summary")
+    ? `<section>
+          <h2>Resumen profesional</h2>
+          <p>${escapeHtml(summary || "Describe tu experiencia y logros clave.")}</p>
+        </section>`
+    : "";
+
   return `
     <header class="cv-header">
-      <h1>${escapeHtml(data.basics.fullName || "Tu nombre")}</h1>
-      <p class="headline">${escapeHtml(data.basics.headline || "Tu titular profesional")}</p>
-      ${renderContactLines(data.basics)}
+      <h1>${escapeHtml(fullName)}</h1>
+      ${headlineMarkup}
+      ${renderContactLines({ ...data.basics, optionalFields: data.optionalFields })}
     </header>
 
     <section class="cv-body">
       <aside>
-        <section>
-          <h2>Habilidades</h2>
-          <div class="pill-list">
-            ${(data.skills.length ? data.skills : ["Agrega habilidades"]).map(
-              (skill) => `<span class="pill">${escapeHtml(skill)}</span>`
-            ).join("")}
-          </div>
-        </section>
+        ${skillsSection}
 
         <section>
           <h2>Idiomas</h2>
@@ -347,10 +616,7 @@ function renderPersonalCv(data) {
       </aside>
 
       <section>
-        <section>
-          <h2>Resumen profesional</h2>
-          <p>${escapeHtml(data.summary || "Describe tu experiencia y logros clave.")}</p>
-        </section>
+        ${summarySection}
 
         <section>
           <h2>Experiencia</h2>
@@ -376,20 +642,39 @@ function renderCv(data) {
 
 function getAllCvText(data) {
   const experienceText = data.experiences
-    .flatMap((exp) => [exp.role, exp.company, exp.location, ...exp.bullets])
+    .flatMap((exp) => [
+      getEnabledValue(exp, "role"),
+      getEnabledValue(exp, "company"),
+      getEnabledValue(exp, "location"),
+      getEnabledValue(exp, "start"),
+      getEnabledValue(exp, "end"),
+      getEnabledValue(exp, "referenceContact"),
+      ...(isFieldEnabled(exp.optionalFields, "bullets") ? exp.bullets : [])
+    ])
     .join(" ");
 
   const educationText = data.education
-    .flatMap((edu) => [edu.degree, edu.institution, edu.start, edu.end])
+    .flatMap((edu) => [
+      getEnabledValue(edu, "degree"),
+      getEnabledValue(edu, "institution"),
+      getEnabledValue(edu, "start"),
+      getEnabledValue(edu, "end")
+    ])
     .join(" ");
 
-  const languageText = data.languages.flatMap((lang) => [lang.name, lang.level]).join(" ");
+  const languageText = data.languages
+    .flatMap((lang) => [getEnabledValue(lang, "name"), getEnabledValue(lang, "level")])
+    .join(" ");
 
   return [
-    data.basics.fullName,
-    data.basics.headline,
-    data.summary,
-    data.skills.join(" "),
+    getOptionalValue(data.optionalFields, "fullName", data.basics.fullName),
+    getOptionalValue(data.optionalFields, "headline", data.basics.headline),
+    getOptionalValue(data.optionalFields, "city", data.basics.city),
+    getOptionalValue(data.optionalFields, "email", data.basics.email),
+    getOptionalValue(data.optionalFields, "phone", data.basics.phone),
+    getOptionalValue(data.optionalFields, "linkedin", data.basics.linkedin),
+    getOptionalValue(data.optionalFields, "summary", data.summary),
+    getOptionalValue(data.optionalFields, "skills", data.skills.join(" ")),
     experienceText,
     educationText,
     languageText
@@ -469,6 +754,14 @@ function loadDraft() {
   form.elements.layout.value = data.layout || "ats";
   form.elements.fontPreset.value = getFontPreset(data.fontPreset);
 
+  const namedOptionalFields = { ...createDefaultOptionalFields(), ...(data.optionalFields || {}) };
+  Object.entries(namedOptionalFields).forEach(([field, enabled]) => {
+    const control = form.elements[field];
+    if (control) {
+      setControlOptionalState(control, enabled);
+    }
+  });
+
   experienceList.innerHTML = "";
   educationList.innerHTML = "";
   languageList.innerHTML = "";
@@ -480,7 +773,16 @@ function loadDraft() {
     setRepeatValue(card, "location", exp.location);
     setRepeatValue(card, "start", exp.start);
     setRepeatValue(card, "end", exp.end);
+    setRepeatValue(card, "referenceContact", exp.referenceContact);
     setRepeatValue(card, "bullets", (exp.bullets || []).join("\n"));
+
+    const optionalFields = { ...createDefaultExperienceOptionalFields(), ...(exp.optionalFields || {}) };
+    Object.entries(optionalFields).forEach(([field, enabled]) => {
+      const control = card.querySelector(`[data-field="${field}"]`);
+      if (control) {
+        setControlOptionalState(control, enabled);
+      }
+    });
   });
 
   (data.education?.length ? data.education : [{}]).forEach((edu) => {
@@ -489,12 +791,28 @@ function loadDraft() {
     setRepeatValue(card, "institution", edu.institution);
     setRepeatValue(card, "start", edu.start);
     setRepeatValue(card, "end", edu.end);
+
+    const optionalFields = { ...createDefaultEducationOptionalFields(), ...(edu.optionalFields || {}) };
+    Object.entries(optionalFields).forEach(([field, enabled]) => {
+      const control = card.querySelector(`[data-field="${field}"]`);
+      if (control) {
+        setControlOptionalState(control, enabled);
+      }
+    });
   });
 
   (data.languages?.length ? data.languages : [{}]).forEach((lang) => {
     const card = createRepeatItem(languageTemplate, languageList);
     setRepeatValue(card, "name", lang.name);
     setRepeatValue(card, "level", lang.level);
+
+    const optionalFields = { ...createDefaultLanguageOptionalFields(), ...(lang.optionalFields || {}) };
+    Object.entries(optionalFields).forEach(([field, enabled]) => {
+      const control = card.querySelector(`[data-field="${field}"]`);
+      if (control) {
+        setControlOptionalState(control, enabled);
+      }
+    });
   });
 
   runAtsHint();
@@ -594,5 +912,6 @@ form.addEventListener("submit", (event) => {
   saveDraft();
 });
 
+enhanceOptionalFields(form);
 loadDraft();
 renderCv(getFormData());
