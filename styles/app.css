@@ -170,19 +170,38 @@ label {
 }
 
 .field-label-head {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 10px;
+  display: block;
 }
 
 .field-include-toggle {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  font-size: 0.78rem;
-  color: var(--muted);
-  white-space: nowrap;
+}
+
+.field-label-text {
+  display: inline-block;
+}
+
+.optional-control-wrap {
+  position: relative;
+  display: block;
+}
+
+.field-include-toggle-inside {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: #fff;
+  border: 1px solid #cfc3ae;
+  border-radius: 999px;
+  padding: 2px 6px;
+  z-index: 2;
+}
+
+.optional-control-wrap-textarea .field-include-toggle-inside {
+  top: 10px;
+  transform: none;
 }
 
 .field-include-toggle input {
@@ -221,6 +240,15 @@ textarea {
   color: var(--ink);
   padding: 10px 12px;
   font: inherit;
+}
+
+input.has-optional-toggle,
+select.has-optional-toggle {
+  padding-right: 46px;
+}
+
+textarea.has-optional-toggle {
+  padding-right: 50px;
 }
 
 input[type="checkbox"],

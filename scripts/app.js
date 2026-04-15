@@ -188,8 +188,14 @@ function enhanceOptionalLabel(label) {
   text.className = "field-label-text";
   nodesBeforeControl.forEach((node) => text.appendChild(node));
 
+  const controlWrap = document.createElement("span");
+  controlWrap.className = "optional-control-wrap";
+  if (control.tagName === "TEXTAREA") {
+    controlWrap.classList.add("optional-control-wrap-textarea");
+  }
+
   const toggle = document.createElement("span");
-  toggle.className = "field-include-toggle";
+  toggle.className = "field-include-toggle field-include-toggle-inside";
 
   const checkbox = document.createElement("input");
   checkbox.type = "checkbox";
@@ -197,8 +203,11 @@ function enhanceOptionalLabel(label) {
   checkbox.dataset.optionalToggleFor = getOptionalToggleId(control);
 
   toggle.append(checkbox);
-  header.append(text, toggle);
+  header.append(text);
   label.insertBefore(header, control);
+  label.insertBefore(controlWrap, control);
+  controlWrap.append(control, toggle);
+  control.classList.add("has-optional-toggle");
   label.dataset.optionalEnhanced = "true";
 
   checkbox.addEventListener("change", () => {
