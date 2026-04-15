@@ -1503,6 +1503,61 @@ function downloadHtml() {
   URL.revokeObjectURL(url);
 }
 
+function buildWordDocumentHtml(data) {
+  const bodyClass = data.layout === "ats" ? "cv-template cv-ats" : "cv-template cv-personal";
+  const fontStack = getFontStack(data.fontPreset);
+  const content = data.layout === "ats" ? renderAtsCv(data) : renderPersonalCv(data);
+
+  return `<!doctype html>
+<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40" lang="es">
+<head>
+  <meta charset="utf-8" />
+  <title>CV ${escapeHtml(data.basics.fullName || "export")}</title>
+  <style>
+    body { margin: 18px; background: #fff; color: #17120d; font-family: ${fontStack}; }
+    .cv-template { max-width: 900px; margin: 0 auto; }
+    .cv-template h1, .cv-template h2, .cv-template h3 { margin: 0; }
+    .cv-header { border-bottom: 1px solid #dfd7c8; padding-bottom: 12px; margin-bottom: 16px; }
+    .cv-header h1 { font-size: 28px; margin-bottom: 6px; }
+    .headline { font-weight: 700; margin: 0 0 6px; }
+    .meta { margin: 0; color: #5a5348; font-size: 13px; }
+    .cv-template section { margin-top: 14px; }
+    .cv-template h2 { font-size: 13px; text-transform: uppercase; letter-spacing: 0.06em; border-bottom: 1px solid #ede6d9; padding-bottom: 4px; margin-bottom: 8px; }
+    .title-row { display: table; width: 100%; margin-bottom: 4px; }
+    .title-row h3 { display: table-cell; font-size: 16px; }
+    .title-row .muted { display: table-cell; text-align: right; }
+    .muted { color: #5a5348; font-size: 14px; margin: 0; }
+    .exp-item, .edu-item { margin-bottom: 12px; }
+    ul { margin: 6px 0 0 18px; padding: 0; }
+    li { margin-bottom: 4px; }
+    .cv-personal .cv-body { display: table; width: 100%; }
+    .cv-personal .cv-body > aside,
+    .cv-personal .cv-body > section { display: table-cell; vertical-align: top; }
+    .cv-personal .cv-body > aside { width: 34%; padding-right: 14px; border-right: 1px solid #ece2d1; }
+    .cv-personal .cv-body > section { width: 66%; padding-left: 14px; }
+    .pill { border: 1px solid #ddd0b8; border-radius: 999px; padding: 2px 8px; display: inline-block; margin: 0 6px 6px 0; font-size: 12px; }
+  </style>
+</head>
+<body>
+  <article class="${bodyClass}">
+    ${content}
+  </article>
+</body>
+</html>`;
+}
+
+function downloadDoc() {
+  const data = getFormData();
+  const docHtml = buildWordDocumentHtml(data);
+  const blob = new Blob([docHtml], { type: "application/msword;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `${(data.basics.fullName || "cv").replace(/\s+/g, "_")}_${data.layout}.doc`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
 function printPdf() {
   window.print();
 }
@@ -1565,6 +1620,10 @@ document.querySelectorAll('[data-action="save-draft"]').forEach((button) => {
 
 document.querySelectorAll('[data-action="download-html"]').forEach((button) => {
   button.addEventListener("click", downloadHtml);
+});
+
+document.querySelectorAll('[data-action="download-doc"]').forEach((button) => {
+  button.addEventListener("click", downloadDoc);
 });
 
 document.querySelectorAll('[data-action="print-pdf"]').forEach((button) => {
