@@ -68,6 +68,7 @@ function createDefaultOptionalFields() {
     linkedin: true,
     summary: true,
     skills: true,
+    notes: true,
     jobKeywords: true
   };
 }
@@ -362,6 +363,7 @@ function getFormData() {
     },
     summary: getRawFieldValue("summary"),
     skills: splitCommaList(getRawFieldValue("skills")),
+    notes: getRawFieldValue("notes"),
     jobKeywords: splitCommaList(getRawFieldValue("jobKeywords")),
     layout: form.elements.layout.value,
     fontPreset: getFontPreset(form.elements.fontPreset?.value),
@@ -566,6 +568,7 @@ function renderAtsCv(data) {
   const headline = getOptionalValue(data.optionalFields, "headline", data.basics.headline);
   const summary = getOptionalValue(data.optionalFields, "summary", data.summary);
   const skills = getOptionalValue(data.optionalFields, "skills", data.skills.join(", "));
+  const notes = getOptionalValue(data.optionalFields, "notes", data.notes);
   const summarySection = isFieldEnabled(data.optionalFields, "summary")
     ? `<section>
         <h2>Resumen profesional</h2>
@@ -576,6 +579,12 @@ function renderAtsCv(data) {
     ? `<section>
         <h2>Habilidades</h2>
         <p>${escapeHtml(skills || "SQL, Power BI, Excel, Python")}</p>
+      </section>`
+    : "";
+  const notesSection = isFieldEnabled(data.optionalFields, "notes") && notes
+    ? `<section>
+        <h2>Observaciones adicionales</h2>
+        <p>${escapeHtml(notes)}</p>
       </section>`
     : "";
   const headlineMarkup = headline
@@ -604,6 +613,8 @@ function renderAtsCv(data) {
 
       ${skillsSection}
 
+      ${notesSection}
+
       <section>
         <h2>Idiomas</h2>
         <ul>${renderLanguages(data.languages)}</ul>
@@ -616,6 +627,7 @@ function renderPersonalCv(data) {
   const fullName = getOptionalValue(data.optionalFields, "fullName", data.basics.fullName) || "Tu nombre";
   const headline = getOptionalValue(data.optionalFields, "headline", data.basics.headline);
   const summary = getOptionalValue(data.optionalFields, "summary", data.summary);
+  const notes = getOptionalValue(data.optionalFields, "notes", data.notes);
   const visibleSkills = isFieldEnabled(data.optionalFields, "skills")
     ? data.skills.length
       ? data.skills
@@ -638,6 +650,12 @@ function renderPersonalCv(data) {
     ? `<section>
           <h2>Resumen profesional</h2>
           <p>${escapeHtml(summary || "Describe tu experiencia y logros clave.")}</p>
+        </section>`
+    : "";
+  const notesSection = isFieldEnabled(data.optionalFields, "notes") && notes
+    ? `<section>
+          <h2>Observaciones adicionales</h2>
+          <p>${escapeHtml(notes)}</p>
         </section>`
     : "";
 
@@ -670,6 +688,8 @@ function renderPersonalCv(data) {
           <h2>Experiencia</h2>
           ${renderExperience(data.experiences)}
         </section>
+
+        ${notesSection}
       </section>
     </section>
   `;
@@ -723,6 +743,7 @@ function getAllCvText(data) {
     getOptionalValue(data.optionalFields, "linkedin", data.basics.linkedin),
     getOptionalValue(data.optionalFields, "summary", data.summary),
     getOptionalValue(data.optionalFields, "skills", data.skills.join(" ")),
+    getOptionalValue(data.optionalFields, "notes", data.notes),
     experienceText,
     educationText,
     languageText
@@ -793,6 +814,7 @@ function loadDraft() {
     "phone",
     "linkedin",
     "summary",
+    "notes",
     "jobKeywords"
   ].forEach((field) => {
     form.elements[field].value = field === "jobKeywords" ? (data.jobKeywords || []).join(", ") : data.basics?.[field] || data[field] || "";
