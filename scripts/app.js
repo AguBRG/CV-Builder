@@ -1387,7 +1387,8 @@ function setRepeatValue(root, field, value) {
 }
 
 function loadDraft() {
-    // Re-inicializar editores enriquecidos tras cargar draft
+  // Re-inicializar editores enriquecidos tras cargar draft
+  setupQuillEditors(document);
   const raw = localStorage.getItem(STORAGE_KEY);
   if (!raw) {
     applyTheme(DEFAULT_THEME);
