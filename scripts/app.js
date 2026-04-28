@@ -975,8 +975,8 @@ function renderEducation(list) {
         <article class="edu-item">
           <div class="title-row">
             <h3>${escapeHtml(title || "Educación")}${inProgress}</h3>
-            <p class="muted">${escapeHtml(period)}</p>
           </div>
+          <p class="muted period-left">${escapeHtml(period)}</p>
           ${details}
         </article>
       `;
@@ -1019,8 +1019,8 @@ function renderCourses(list) {
         <article class="course-item">
           <div class="title-row">
             <h3>${escapeHtml(title || "Curso")}${inProgress}</h3>
-            <p class="muted">${escapeHtml(period)}</p>
           </div>
+          <p class="muted period-left">${escapeHtml(period)}</p>
           ${details}
         </article>
       `;

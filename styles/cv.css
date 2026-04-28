@@ -1,3 +1,9 @@
+.period-left {
+  margin: 0 0 2px 0;
+  text-align: left;
+  font-size: 0.97em;
+  font-style: italic;
+}
 .cv-template {
   border: 1px solid #d8cfbf;
   background: #fff;
