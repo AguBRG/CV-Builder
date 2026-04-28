@@ -860,9 +860,9 @@ function getFormData() {
       degree: getControlValue(item.querySelector('[data-field="degree"]'), true),
       institution: getControlValue(item.querySelector('[data-field="institution"]'), true),
       start: getControlValue(item.querySelector('[data-field="start"]'), true),
-      end: course.inProgress ? "En curso" : getControlValue(course, "end"),
-      inProgress: course.inProgress,
-      extraDetails: getControlValue(course, "extraDetails")
+      inProgress: item.querySelector('[data-field="inProgress"]')?.checked || false,
+      end: (item.querySelector('[data-field="inProgress"]')?.checked ? "En curso" : getControlValue(item.querySelector('[data-field="end"]'), true)),
+      extraDetails: getControlValue(item.querySelector('[data-field="extraDetails"]'), true)
     })) || [{}]),
     languages: (collectRepeats(".language-item", (item) => ({
       name: getControlValue(item.querySelector('[data-field="name"]'), true),
