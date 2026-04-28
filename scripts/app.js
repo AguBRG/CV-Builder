@@ -908,8 +908,9 @@ function renderExperience(list) {
   }
   return visibleItems
     .map((exp) => {
-      const bullets = exp.bullets && exp.bullets.trim()
-        ? `<div class="muted rich-preview">${exp.bullets}</div>`
+      const bulletsStr = Array.isArray(exp.bullets) ? exp.bullets.join('\n') : (exp.bullets || '');
+      const bullets = bulletsStr && bulletsStr.trim()
+        ? `<div class="muted rich-preview">${bulletsStr}</div>`
         : "";
       const title = [exp.role, exp.company].filter(Boolean).join(" - ");
       const period = [exp.start, exp.end].filter(Boolean).join(" - ");
