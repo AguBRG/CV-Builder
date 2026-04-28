@@ -2,6 +2,7 @@
 window.quillEditors = new Map();
 
 function setupQuillEditors(root) {
+  if (!window.quillEditors) window.quillEditors = new Map();
   (root.querySelectorAll('.quill-editor') || []).forEach(div => {
     if (window.quillEditors.has(div)) return;
     const toolbarOptions = [
@@ -21,7 +22,7 @@ function setupQuillEditors(root) {
 }
 // Inicializar rich text en carga inicial
 document.addEventListener('DOMContentLoaded', function () {
-  setupRichTextEditors(document);
+  setupQuillEditors(document);
 });
 const form = document.querySelector("#cvForm");
 const preview = document.querySelector("#cvPreview");
@@ -595,9 +596,12 @@ function enhanceOptionalLabel(label) {
   }
 
   const dateGroup = label.querySelector("[data-date-group]");
-  const control = dateGroup
-    ? dateGroup.querySelector('[data-date-part="month"]')
-    : label.querySelector("input, textarea, select");
+  let control;
+  if (dateGroup) {
+    control = dateGroup.querySelector('[data-date-part="month"]');
+  } else {
+    control = label.querySelector("input, textarea, select, .quill-editor");
+  }
   const targetNode = dateGroup || control;
 
   if (!control || control.type === "radio" || control.type === "checkbox") {
@@ -768,7 +772,6 @@ function createRepeatItem(template, listEl) {
   enhanceOptionalFields(clone);
 
   bindInProgressToggle(clone);
-  setupQuillEditors(clone);
 
   clone.querySelector(".remove-btn").addEventListener("click", () => {
     clone.remove();
@@ -777,6 +780,8 @@ function createRepeatItem(template, listEl) {
   });
 
   listEl.appendChild(clone);
+  // Inicializar Quill SOLO en los editores del nuevo ítem
+  requestAnimationFrame(() => setupQuillEditors(clone));
   return clone;
 }
 
@@ -1563,7 +1568,7 @@ function addDefaultItems() {
   createRepeatItem(educationTemplate, educationList);
   createRepeatItem(courseTemplate, courseList);
   createRepeatItem(languageTemplate, languageList);
-  setupQuillEditors(document);
+  requestAnimationFrame(() => setupQuillEditors(document));
 }
 
 function bindNoSectionToggle({
@@ -1587,6 +1592,9 @@ function bindNoSectionToggle({
     if (!noSection && !listEl.children.length) {
       createItem();
     }
+    if (!noSection) {
+      setupQuillEditors(listEl);
+    }
 
     if (shouldPersist) {
       runAtsHint();
@@ -1594,7 +1602,10 @@ function bindNoSectionToggle({
     }
   };
 
-  checkbox.addEventListener("change", () => applyState(true));
+  checkbox.addEventListener("change", () => {
+    applyState(true);
+    setupQuillEditors(listEl);
+  });
   checkbox._applyNoSectionState = applyState;
   applyState(false);
 }

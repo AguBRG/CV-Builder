@@ -2,8 +2,11 @@
   background: #fff;
   border: 1px solid #cfc3ae;
   border-radius: 10px;
-  min-height: 60px;
+  min-height: 60px !important;
   margin-bottom: 4px;
+  display: block !important;
+  position: relative;
+  z-index: 1;
 }
 body.theme-dark .quill-editor {
   background: #2b241c;
