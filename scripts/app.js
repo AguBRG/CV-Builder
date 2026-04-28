@@ -913,7 +913,13 @@ function renderExperience(list) {
         ? `<div class="muted rich-preview">${bulletsStr}</div>`
         : "";
       const title = [exp.role, exp.company].filter(Boolean).join(" - ");
-      const period = [exp.start, exp.end].filter(Boolean).join(" - ");
+      // Si no hay end, mostrar 'Presente'
+      let period = '';
+      if (exp.start && !exp.end) {
+        period = `${exp.start} - Presente`;
+      } else {
+        period = [exp.start, exp.end].filter(Boolean).join(" - ");
+      }
       const location = exp.location ? `<p class="muted">${escapeHtml(exp.location)}</p>` : "";
       const reference = exp.referenceContact
         ? `<p class="muted exp-reference"><strong>Referencia:</strong> ${escapeHtml(exp.referenceContact)}</p>`
@@ -957,7 +963,13 @@ function renderEducation(list) {
         ? `<div class="muted rich-preview">${edu.extraDetails}</div>`
         : "";
       const title = [edu.degree, edu.institution].filter(Boolean).join(" - ");
-      const period = [edu.start, edu.end].filter(Boolean).join(" - ");
+      // Si no hay end, mostrar 'Presente'
+      let period = '';
+      if (edu.start && !edu.end) {
+        period = `${edu.start} - Presente`;
+      } else {
+        period = [edu.start, edu.end].filter(Boolean).join(" - ");
+      }
       const inProgress = edu.inProgress ? ' (en curso)' : '';
       return `
         <article class="edu-item">
@@ -995,7 +1007,13 @@ function renderCourses(list) {
         ? `<div class="muted rich-preview">${course.extraDetails}</div>`
         : "";
       const title = [course.degree, course.institution].filter(Boolean).join(" - ");
-      const period = [course.start, course.end].filter(Boolean).join(" - ");
+      // Si no hay end, mostrar 'Presente'
+      let period = '';
+      if (course.start && !course.end) {
+        period = `${course.start} - Presente`;
+      } else {
+        period = [course.start, course.end].filter(Boolean).join(" - ");
+      }
       const inProgress = course.inProgress ? ' (en curso)' : '';
       return `
         <article class="course-item">
