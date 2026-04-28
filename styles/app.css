@@ -1,3 +1,87 @@
+.quill-editor {
+  background: #fff;
+  border: 1px solid #cfc3ae;
+  border-radius: 10px;
+  min-height: 60px;
+  margin-bottom: 4px;
+}
+body.theme-dark .quill-editor {
+  background: #2b241c;
+  border-color: #5d513f;
+  color: #efe5d5;
+}
+.ql-toolbar {
+  border-radius: 10px 10px 0 0;
+}
+.ql-container {
+  border-radius: 0 0 10px 10px;
+}
+.rich-preview {
+  padding: 2px 0 0 0;
+  font-size: 1em;
+}
+.rich-preview ul {
+  margin: 0 0 0 1.2em;
+  padding: 0;
+}
+.rich-preview li {
+  margin-bottom: 0.2em;
+}
+.rich-preview b, .rich-preview strong {
+  font-weight: bold;
+}
+.rich-preview u {
+  text-decoration: underline;
+}
+/* Rich text editor básico */
+.rich-toolbar {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+.rich-btn {
+  background: #f4efe7;
+  border: 1px solid #cfc3ae;
+  border-radius: 6px;
+  padding: 2px 8px;
+  font-size: 1rem;
+  cursor: pointer;
+  color: #4d4538;
+  transition: background 0.15s;
+}
+.rich-btn:hover {
+  background: #e6dccb;
+}
+.rich-textarea {
+  min-height: 60px;
+  border-radius: 10px;
+  border: 1px solid #cfc3ae;
+  background: #fff;
+  color: var(--ink);
+  padding: 10px 12px;
+  font: inherit;
+  outline: none;
+  width: 100%;
+  margin-bottom: 4px;
+}
+.rich-textarea:empty:before {
+  content: attr(data-placeholder);
+  color: #b8ac97;
+  pointer-events: none;
+}
+body.theme-dark .rich-textarea {
+  background: #2b241c;
+  border-color: #5d513f;
+  color: #efe5d5;
+}
+body.theme-dark .rich-btn {
+  background: #2b241c;
+  border-color: #5d513f;
+  color: #efe5d5;
+}
+body.theme-dark .rich-btn:hover {
+  background: #3a3127;
+}
 :root {
   --bg: #f5f1e8;
   --panel: #fffdf8;

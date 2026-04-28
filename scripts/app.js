@@ -1,3 +1,28 @@
+// --- Quill WYSIWYG para logros y datos extra ---
+window.quillEditors = new Map();
+
+function setupQuillEditors(root) {
+  (root.querySelectorAll('.quill-editor') || []).forEach(div => {
+    if (window.quillEditors.has(div)) return;
+    const toolbarOptions = [
+      ['bold', 'italic', 'underline', 'strike'],
+      [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+      ['link'],
+      [{ 'header': [1, 2, false] }],
+      ['clean']
+    ];
+    const quill = new Quill(div, {
+      theme: 'snow',
+      placeholder: div.dataset.placeholder || '',
+      modules: { toolbar: toolbarOptions }
+    });
+    window.quillEditors.set(div, quill);
+  });
+}
+// Inicializar rich text en carga inicial
+document.addEventListener('DOMContentLoaded', function () {
+  setupRichTextEditors(document);
+});
 const form = document.querySelector("#cvForm");
 const preview = document.querySelector("#cvPreview");
 const previewMeta = document.querySelector("#previewMeta");
@@ -665,7 +690,11 @@ function getControlValue(control, includeDisabled = false) {
     return "";
   }
 
-  return control.value.trim();
+  if (control.classList && control.classList.contains('quill-editor')) {
+    const quill = window.quillEditors?.get?.(control);
+    return quill ? quill.root.innerHTML.trim() : control.innerHTML.trim();
+  }
+  return control.value?.trim?.() || "";
 }
 
 function getNamedFieldOptionalStates() {
@@ -737,7 +766,9 @@ function createRepeatItem(template, listEl) {
   const clone = template.content.firstElementChild.cloneNode(true);
   setupDateSelectors(clone);
   enhanceOptionalFields(clone);
+
   bindInProgressToggle(clone);
+  setupQuillEditors(clone);
 
   clone.querySelector(".remove-btn").addEventListener("click", () => {
     clone.remove();
@@ -880,8 +911,8 @@ function renderExperience(list) {
 
   return visibleItems
     .map((exp) => {
-      const bullets = exp.bullets.length
-        ? `<ul>${exp.bullets.map((b) => `<li>${escapeHtml(b)}</li>`).join("")}</ul>`
+      const bullets = exp.bullets && exp.bullets.trim()
+        ? `<div class="muted rich-preview">${exp.bullets}</div>`
         : "";
       const title = [exp.role, exp.company].filter(Boolean).join(" - ");
       const period = [exp.start, exp.end].filter(Boolean).join(" - ");
@@ -932,7 +963,7 @@ function renderEducation(list) {
           ? `<p class="muted">${escapeHtml(edu.institution)}</p>`
           : "";
         const extraDetails = edu.extraDetails
-          ? `<p class="muted">${renderMultilineText(edu.extraDetails)}</p>`
+          ? `<div class="muted rich-preview">${edu.extraDetails}</div>`
           : "";
 
         return `
@@ -981,7 +1012,7 @@ function renderCourses(list) {
         ? `<p class="muted">${escapeHtml(course.institution)}</p>`
         : "";
       const extraDetails = course.extraDetails
-        ? `<p class="muted">${renderMultilineText(course.extraDetails)}</p>`
+        ? `<div class="muted rich-preview">${course.extraDetails}</div>`
         : "";
 
       return `
@@ -1363,6 +1394,13 @@ function setRepeatValue(root, field, value) {
   if (el) {
     if (el.dataset.datePart === "month") {
       setDateValueToControl(el, value || "");
+    } else if (el.classList && el.classList.contains('quill-editor')) {
+      const quill = window.quillEditors?.get?.(el);
+      if (quill) {
+        quill.root.innerHTML = value || '';
+      } else {
+        el.innerHTML = value || '';
+      }
     } else {
       el.value = value || "";
     }
@@ -1370,6 +1408,8 @@ function setRepeatValue(root, field, value) {
 }
 
 function loadDraft() {
+    // Re-inicializar editores enriquecidos tras cargar draft
+    setupRichTextEditors(document);
   const raw = localStorage.getItem(STORAGE_KEY);
   if (!raw) {
     applyTheme(DEFAULT_THEME);
@@ -1523,6 +1563,7 @@ function addDefaultItems() {
   createRepeatItem(educationTemplate, educationList);
   createRepeatItem(courseTemplate, courseList);
   createRepeatItem(languageTemplate, languageList);
+  setupQuillEditors(document);
 }
 
 function bindNoSectionToggle({
