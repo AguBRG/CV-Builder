@@ -837,7 +837,7 @@ function getFormData() {
     theme: getCurrentTheme(),
     optionalFields: getNamedFieldOptionalStates(),
     sectionVisibility,
-    experiences: collectRepeats(".experience-item", (item) => ({
+    experiences: (collectRepeats(".experience-item", (item) => ({
       role: getControlValue(item.querySelector('[data-field="role"]'), true),
       company: getControlValue(item.querySelector('[data-field="company"]'), true),
       location: getControlValue(item.querySelector('[data-field="location"]'), true),
@@ -846,8 +846,8 @@ function getFormData() {
       referenceContact: getControlValue(item.querySelector('[data-field="referenceContact"]'), true),
       bullets: splitLines(getControlValue(item.querySelector('[data-field="bullets"]'), true)),
       optionalFields: collectRepeatOptionalStates(item, createDefaultExperienceOptionalFields())
-    })),
-    education: collectRepeats(".education-item", (item) => ({
+    })) || [{}]),
+    education: (collectRepeats(".education-item", (item) => ({
       degree: getControlValue(item.querySelector('[data-field="degree"]'), true),
       institution: getControlValue(item.querySelector('[data-field="institution"]'), true),
       start: getControlValue(item.querySelector('[data-field="start"]'), true),
@@ -855,21 +855,20 @@ function getFormData() {
       inProgress: item.querySelector('[data-field="inProgress"]')?.checked || false,
       extraDetails: getControlValue(item.querySelector('[data-field="extraDetails"]'), true),
       optionalFields: collectRepeatOptionalStates(item, createDefaultEducationOptionalFields())
-    })),
-    courses: collectRepeats(".course-item", (item) => ({
+    })) || [{}]),
+    courses: (collectRepeats(".course-item", (item) => ({
       degree: getControlValue(item.querySelector('[data-field="degree"]'), true),
       institution: getControlValue(item.querySelector('[data-field="institution"]'), true),
       start: getControlValue(item.querySelector('[data-field="start"]'), true),
-      end: getControlValue(item.querySelector('[data-field="end"]'), true),
-      inProgress: item.querySelector('[data-field="inProgress"]')?.checked || false,
-      extraDetails: getControlValue(item.querySelector('[data-field="extraDetails"]'), true),
-      optionalFields: collectRepeatOptionalStates(item, createDefaultCourseOptionalFields())
-    })),
-    languages: collectRepeats(".language-item", (item) => ({
+      end: course.inProgress ? "En curso" : getControlValue(course, "end"),
+      inProgress: course.inProgress,
+      extraDetails: getControlValue(course, "extraDetails")
+    })) || [{}]),
+    languages: (collectRepeats(".language-item", (item) => ({
       name: getControlValue(item.querySelector('[data-field="name"]'), true),
       level: getControlValue(item.querySelector('[data-field="level"]'), true),
       optionalFields: collectRepeatOptionalStates(item, createDefaultLanguageOptionalFields())
-    }))
+    })) || [{}])
   };
 
   return data;
@@ -889,16 +888,11 @@ function renderMultilineText(value = "") {
 }
 
 function renderExperience(list) {
+  console.log('[DEPURACIÓN] renderExperience recibe:', list);
+  if (!Array.isArray(list) || !list.length) {
+    return '<div class="muted">Sin experiencias para mostrar.</div>';
+  }
   const visibleItems = list
-    .map((exp) => ({
-      role: getEnabledValue(exp, "role"),
-      company: getEnabledValue(exp, "company"),
-      location: getEnabledValue(exp, "location"),
-      start: getEnabledValue(exp, "start"),
-      end: getEnabledValue(exp, "end"),
-      referenceContact: getEnabledValue(exp, "referenceContact"),
-      bullets: isFieldEnabled(exp.optionalFields, "bullets") ? exp.bullets : []
-    }))
     .filter(
       (exp) =>
         exp.role ||
@@ -907,13 +901,11 @@ function renderExperience(list) {
         exp.start ||
         exp.end ||
         exp.referenceContact ||
-        exp.bullets.length
+        (exp.bullets && exp.bullets.trim())
     );
-
   if (!visibleItems.length) {
-    return "<p class=\"muted\">Completa al menos una experiencia.</p>";
+    return '<p class="muted">Completa al menos una experiencia.</p>';
   }
-
   return visibleItems
     .map((exp) => {
       const bullets = exp.bullets && exp.bullets.trim()
@@ -940,62 +932,50 @@ function renderExperience(list) {
     })
     .join("");
 }
-
 function renderEducation(list) {
+  console.log('[DEPURACIÓN] renderEducation recibe:', list);
+  if (!Array.isArray(list) || !list.length) {
+    return '<div class="muted">Sin educación para mostrar.</div>';
+  }
   const visibleItems = list
-    .map((edu) => ({
-      degree: getEnabledValue(edu, "degree"),
-      institution: getEnabledValue(edu, "institution"),
-      start: getEnabledValue(edu, "start"),
-      end: edu.inProgress ? "En curso" : getEnabledValue(edu, "end"),
-      inProgress: edu.inProgress,
-      extraDetails: getEnabledValue(edu, "extraDetails")
-    }))
     .filter(
       (edu) =>
-        edu.degree || edu.institution || edu.start || edu.end || edu.inProgress || edu.extraDetails
+        edu.degree ||
+        edu.institution ||
+        edu.start ||
+        edu.end ||
+        edu.inProgress ||
+        (edu.extraDetails && edu.extraDetails.trim())
     );
-
   if (!visibleItems.length) {
-    return "<p class=\"muted\">Agrega tu formación académica.</p>";
+    return '<p class="muted">Completa al menos una educación.</p>';
   }
-
   return visibleItems
-    .map(
-      (edu) => {
-        const period = [edu.start, edu.end].filter(Boolean).join(" - ");
-        const institution = edu.institution
-          ? `<p class="muted">${escapeHtml(edu.institution)}</p>`
-          : "";
-        const extraDetails = edu.extraDetails
-          ? `<div class="muted rich-preview">${edu.extraDetails}</div>`
-          : "";
-
-        return `
+    .map((edu) => {
+      const details = edu.extraDetails && edu.extraDetails.trim()
+        ? `<div class="muted rich-preview">${edu.extraDetails}</div>`
+        : "";
+      const title = [edu.degree, edu.institution].filter(Boolean).join(" - ");
+      const period = [edu.start, edu.end].filter(Boolean).join(" - ");
+      const inProgress = edu.inProgress ? ' (en curso)' : '';
+      return `
         <article class="edu-item">
           <div class="title-row">
-            <h3>${escapeHtml(edu.degree || "Formación")}</h3>
+            <h3>${escapeHtml(title || "Educación")}${inProgress}</h3>
             <p class="muted">${escapeHtml(period)}</p>
           </div>
-          ${institution}
-          ${extraDetails}
+          ${details}
         </article>
       `;
-      }
-    )
+    })
     .join("");
 }
-
 function renderCourses(list) {
+  console.log('[DEPURACIÓN] renderCourses recibe:', list);
+  if (!Array.isArray(list) || !list.length) {
+    return '<div class="muted">Sin cursos para mostrar.</div>';
+  }
   const visibleItems = list
-    .map((course) => ({
-      degree: getEnabledValue(course, "degree"),
-      institution: getEnabledValue(course, "institution"),
-      start: getEnabledValue(course, "start"),
-      end: course.inProgress ? "En curso" : getEnabledValue(course, "end"),
-      inProgress: course.inProgress,
-      extraDetails: getEnabledValue(course, "extraDetails")
-    }))
     .filter(
       (course) =>
         course.degree ||
@@ -1003,31 +983,26 @@ function renderCourses(list) {
         course.start ||
         course.end ||
         course.inProgress ||
-        course.extraDetails
+        (course.extraDetails && course.extraDetails.trim())
     );
-
   if (!visibleItems.length) {
-    return "<p class=\"muted\">Agrega al menos un curso.</p>";
+    return '<p class="muted">Completa al menos un curso.</p>';
   }
-
   return visibleItems
     .map((course) => {
-      const period = [course.start, course.end].filter(Boolean).join(" - ");
-      const institution = course.institution
-        ? `<p class="muted">${escapeHtml(course.institution)}</p>`
-        : "";
-      const extraDetails = course.extraDetails
+      const details = course.extraDetails && course.extraDetails.trim()
         ? `<div class="muted rich-preview">${course.extraDetails}</div>`
         : "";
-
+      const title = [course.degree, course.institution].filter(Boolean).join(" - ");
+      const period = [course.start, course.end].filter(Boolean).join(" - ");
+      const inProgress = course.inProgress ? ' (en curso)' : '';
       return `
-        <article class="edu-item">
+        <article class="course-item">
           <div class="title-row">
-            <h3>${escapeHtml(course.degree || "Curso")}</h3>
+            <h3>${escapeHtml(title || "Curso")}${inProgress}</h3>
             <p class="muted">${escapeHtml(period)}</p>
           </div>
-          ${institution}
-          ${extraDetails}
+          ${details}
         </article>
       `;
     })
@@ -1035,19 +1010,17 @@ function renderCourses(list) {
 }
 
 function renderLanguages(list) {
-  const visibleItems = list
-    .map((lang) => ({
-      name: getEnabledValue(lang, "name"),
-      level: getEnabledValue(lang, "level")
-    }))
-    .filter((lang) => lang.name || lang.level);
-
-  if (!visibleItems.length) {
-    return "<p class=\"muted\">Sin idiomas cargados.</p>";
+  console.log('[DEPURACIÓN] renderLanguages recibe:', list);
+  if (!Array.isArray(list) || !list.length) {
+    return '<li class="muted">Sin idiomas para mostrar.</li>';
   }
-
+  const visibleItems = list
+    .filter((lang) => lang.name || lang.level);
+  if (!visibleItems.length) {
+    return '<li class="muted">Completa al menos un idioma.</li>';
+  }
   return visibleItems
-    .map((lang) => `<li>${escapeHtml([lang.name, lang.level].filter(Boolean).join(" - "))}</li>`)
+    .map((lang) => `<li>${escapeHtml(lang.name || "Idioma")}${lang.level ? ` - ${escapeHtml(lang.level)}` : ""}</li>`)
     .join("");
 }
 
@@ -1295,7 +1268,8 @@ function renderCv(data) {
     fontPreset
   )}`;
 
-  preview.innerHTML = isAts ? renderAtsCv(data) : renderPersonalCv(data);
+  const html = isAts ? renderAtsCv(data) : renderPersonalCv(data);
+  preview.innerHTML = html && html.trim() ? html : '<div class="muted">Sin datos para mostrar.</div>';
 }
 
 function getAllCvText(data) {
@@ -1414,7 +1388,6 @@ function setRepeatValue(root, field, value) {
 
 function loadDraft() {
     // Re-inicializar editores enriquecidos tras cargar draft
-    setupRichTextEditors(document);
   const raw = localStorage.getItem(STORAGE_KEY);
   if (!raw) {
     applyTheme(DEFAULT_THEME);
@@ -1791,6 +1764,9 @@ form.addEventListener("change", scheduleAutoSave);
 form.addEventListener("submit", (event) => {
   event.preventDefault();
   const data = getFormData();
+  console.log("[DEPURACIÓN] getFormData()", data);
+  const html = (data.layout === "ats" ? renderAtsCv(data) : renderPersonalCv(data));
+  console.log("[DEPURACIÓN] HTML generado", html);
   renderCv(data);
   saveDraft();
 });
@@ -1800,6 +1776,14 @@ setupDateSelectors(form);
 applyTheme(DEFAULT_THEME);
 loadDraft();
 renderCv(getFormData());
+
+// DEPURACIÓN: Log de ítems en el DOM al cargar
+window.addEventListener("DOMContentLoaded", () => {
+  console.log("[DEPURACIÓN] Experiencia en DOM:", experienceList.children.length);
+  console.log("[DEPURACIÓN] Educación en DOM:", educationList.children.length);
+  console.log("[DEPURACIÓN] Cursos en DOM:", courseList.children.length);
+  console.log("[DEPURACIÓN] Idiomas en DOM:", languageList.children.length);
+});
 
 // Botón inferior de agregar experiencia
 const addExperienceBottom = document.getElementById("addExperienceBottom");
