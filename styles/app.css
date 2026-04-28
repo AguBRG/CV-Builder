@@ -672,3 +672,9 @@ body.theme-dark .compact-check:hover {
     padding: 14px;
   }
 }
+
+.add-experience-bottom-row {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 12px;
+}

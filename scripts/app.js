@@ -1800,3 +1800,18 @@ setupDateSelectors(form);
 applyTheme(DEFAULT_THEME);
 loadDraft();
 renderCv(getFormData());
+
+// Botón inferior de agregar experiencia
+const addExperienceBottom = document.getElementById("addExperienceBottom");
+if (addExperienceBottom) {
+  addExperienceBottom.addEventListener("click", () => {
+    document.getElementById("addExperience").click();
+    // Scroll suave al nuevo ítem
+    setTimeout(() => {
+      const items = experienceList.querySelectorAll('.experience-item');
+      if (items.length) {
+        items[items.length - 1].scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    }, 100);
+  });
+}
