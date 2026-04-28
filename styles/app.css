@@ -678,3 +678,37 @@ body.theme-dark .compact-check:hover {
   justify-content: flex-end;
   margin-top: 12px;
 }
+
+body.theme-dark .ql-toolbar {
+  background: #1e1a15;
+  border-color: #5d513f;
+  color: #efe5d5;
+}
+body.theme-dark .ql-container {
+  background: #2b241c;
+  border-color: #5d513f;
+  color: #efe5d5;
+}
+body.theme-dark .ql-toolbar button,
+body.theme-dark .ql-toolbar .ql-picker-label,
+body.theme-dark .ql-toolbar .ql-picker-item {
+  color: #efe5d5 !important;
+  fill: #efe5d5 !important;
+}
+body.theme-dark .ql-toolbar button.ql-active,
+body.theme-dark .ql-toolbar button:hover {
+  background: #3a3227;
+}
+body.theme-dark .ql-toolbar .ql-stroke {
+  stroke: #efe5d5 !important;
+}
+body.theme-dark .ql-toolbar .ql-fill {
+  fill: #efe5d5 !important;
+}
+body.theme-dark .ql-toolbar .ql-picker {
+  color: #efe5d5 !important;
+}
+body.theme-dark .ql-editor.ql-blank::before {
+  color: #b8b0a3 !important;
+  opacity: 1 !important;
+}
